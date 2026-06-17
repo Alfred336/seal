@@ -1,0 +1,126 @@
+<?php
+
+namespace App\Livewire\Manage;
+
+use App\Models\Service;
+use Illuminate\View\View;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+
+#[Title('Services')]
+#[Layout('layouts.app')]
+class Services extends Component
+{
+    public ?int $editingId = null;
+    public string $editTitle = '';
+    public string $editDescription = '';
+    public string $editIcon = '';
+
+    public string $newTitle = '';
+    public string $newDescription = '';
+    public string $newIcon = '';
+
+    public function create(): void
+    {
+        $this->authorize('create', Service::class);
+        $this->validate([
+            'newTitle'       => ['required', 'string', 'max:100'],
+            'newDescription' => ['nullable', 'string'],
+            'newIcon'        => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $maxOrder = Service::max('sort_order') ?? -1;
+        Service::create([
+            'title'       => $this->newTitle,
+            'description' => $this->newDescription ?: null,
+            'icon'        => $this->newIcon ?: null,
+            'sort_order'  => $maxOrder + 1,
+        ]);
+
+        $this->reset('newTitle', 'newDescription', 'newIcon');
+    }
+
+    public function startEdit(int $id): void
+    {
+        $service = Service::findOrFail($id);
+        $this->editingId    = $id;
+        $this->editTitle       = $service->title;
+        $this->editDescription = $service->description ?? '';
+        $this->editIcon        = $service->icon ?? '';
+    }
+
+    public function saveEdit(): void
+    {
+        $service = Service::findOrFail($this->editingId);
+        $this->authorize('update', $service);
+        $this->validate([
+            'editTitle'       => ['required', 'string', 'max:100'],
+            'editDescription' => ['nullable', 'string'],
+            'editIcon'        => ['nullable', 'string', 'max:100'],
+        ]);
+        $service->update([
+            'title'       => $this->editTitle,
+            'description' => $this->editDescription ?: null,
+            'icon'        => $this->editIcon ?: null,
+        ]);
+        $this->editingId = null;
+    }
+
+    public function toggleActive(int $id): void
+    {
+        $service = Service::findOrFail($id);
+        $this->authorize('update', $service);
+        $service->update(['active' => ! $service->active]);
+    }
+
+    public function moveUp(int $id): void
+    {
+        $this->authorize('update', Service::findOrFail($id));
+        $this->swap($id, 'up');
+    }
+
+    public function moveDown(int $id): void
+    {
+        $this->authorize('update', Service::findOrFail($id));
+        $this->swap($id, 'down');
+    }
+
+    public function delete(int $id): void
+    {
+        $service = Service::findOrFail($id);
+        $this->authorize('delete', $service);
+        $service->delete();
+        $this->reindex();
+    }
+
+    public function render(): View
+    {
+        return view('livewire.manage.services', [
+            'services' => Service::ordered()->get(),
+        ]);
+    }
+
+    private function swap(int $id, string $direction): void
+    {
+        $services = Service::ordered()->get();
+        $index = $services->search(fn ($s) => $s->id === $id);
+
+        if ($index === false) return;
+
+        $swapIndex = $direction === 'up' ? $index - 1 : $index + 1;
+        if ($swapIndex < 0 || $swapIndex >= $services->count()) return;
+
+        [$a, $b] = [$services[$index], $services[$swapIndex]];
+        [$a->sort_order, $b->sort_order] = [$b->sort_order, $a->sort_order];
+        $a->save();
+        $b->save();
+    }
+
+    private function reindex(): void
+    {
+        Service::ordered()->get()->each(function (Service $s, int $i): void {
+            $s->update(['sort_order' => $i]);
+        });
+    }
+}

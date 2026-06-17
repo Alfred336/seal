@@ -1,0 +1,61 @@
+<div class="flex flex-col gap-4">
+    <flux:heading size="lg">{{ __('Call Requests') }}</flux:heading>
+
+    <div class="flex gap-3">
+        <flux:input wire:model.live.debounce.300ms="search" placeholder="{{ __('Search…') }}" icon="magnifying-glass" class="max-w-xs" />
+        <flux:select wire:model.live="status" class="max-w-44">
+            <flux:select.option value="">{{ __('All statuses') }}</flux:select.option>
+            @foreach ($statuses as $s)
+                <flux:select.option :value="$s->value">{{ ucfirst($s->value) }}</flux:select.option>
+            @endforeach
+        </flux:select>
+    </div>
+
+    <div class="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700">
+        <table class="w-full text-sm">
+            <thead class="bg-zinc-50 text-left dark:bg-zinc-900">
+                <tr>
+                    <th class="px-4 py-3 font-medium text-zinc-500">{{ __('Name') }}</th>
+                    <th class="px-4 py-3 font-medium text-zinc-500">{{ __('Email') }}</th>
+                    <th class="px-4 py-3 font-medium text-zinc-500">{{ __('Phone') }}</th>
+                    <th class="px-4 py-3 font-medium text-zinc-500">{{ __('Preferred Date') }}</th>
+                    <th class="px-4 py-3 font-medium text-zinc-500">{{ __('Submitted') }}</th>
+                    <th class="px-4 py-3 font-medium text-zinc-500">{{ __('Status') }}</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
+                @forelse ($requests as $request)
+                    <tr>
+                        <td class="px-4 py-3 font-medium text-zinc-900 dark:text-white">
+                            {{ $request->full_name }}
+                            @if ($request->notes)
+                                <p class="text-xs text-zinc-400 font-normal max-w-xs truncate">{{ $request->notes }}</p>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3 text-zinc-500">{{ $request->email }}</td>
+                        <td class="px-4 py-3 text-zinc-500">{{ $request->phone }}</td>
+                        <td class="px-4 py-3 text-zinc-500 whitespace-nowrap">{{ $request->preferred_date->format('M j, Y') }}</td>
+                        <td class="px-4 py-3 text-zinc-500 whitespace-nowrap">{{ $request->created_at->format('M j, Y') }}</td>
+                        <td class="px-4 py-3">
+                            @can('update', $request)
+                                <flux:select wire:change="updateStatus({{ $request->id }}, $event.target.value)" class="text-xs py-1">
+                                    @foreach ($statuses as $s)
+                                        <flux:select.option :value="$s->value" :selected="$request->status === $s">
+                                            {{ ucfirst($s->value) }}
+                                        </flux:select.option>
+                                    @endforeach
+                                </flux:select>
+                            @else
+                                <flux:badge size="sm">{{ $request->status->value }}</flux:badge>
+                            @endcan
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="6" class="px-4 py-10 text-center text-zinc-400">{{ __('No call requests found.') }}</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <div>{{ $requests->links() }}</div>
+</div>
