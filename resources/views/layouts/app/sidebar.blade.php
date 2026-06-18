@@ -51,9 +51,7 @@
                     </flux:sidebar.group>
                 @endcan
 
-                @if(auth()->user()->can('viewAny', App\Models\ContactSubmission::class)
-                    || auth()->user()->can('viewAny', App\Models\CallRequest::class)
-                    || auth()->user()->can('viewAny', App\Models\ProjectRequest::class))
+                @can('manage-inquiries')
                     <flux:sidebar.group :heading="__('Inquiries')" class="grid">
                         @can('viewAny', App\Models\ContactSubmission::class)
                             <flux:sidebar.item icon="envelope" :href="route('manage.contact-submissions.index')" :current="request()->routeIs('manage.contact-submissions.*')" wire:navigate>
@@ -73,7 +71,7 @@
                             </flux:sidebar.item>
                         @endcan
                     </flux:sidebar.group>
-                @endif
+                @endcan
 
                 @can('viewAny', App\Models\Subscription::class)
                     <flux:sidebar.group :heading="__('Marketing')" class="grid">

@@ -3,6 +3,7 @@
 namespace App\Livewire\Manage;
 
 use App\Enums\ContactSubmissionStatus;
+use App\Enums\Permission;
 use App\Models\ContactSubmission;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -17,15 +18,23 @@ class ContactSubmissions extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $status = '';
 
-    public function updatingSearch(): void { $this->resetPage(); }
-    public function updatingStatus(): void { $this->resetPage(); }
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatus(): void
+    {
+        $this->resetPage();
+    }
 
     public function updateStatus(int $id, string $status): void
     {
+        abort_unless(auth()->user()->can(Permission::ContactSubmissionsUpdate->value), 403);
         $submission = ContactSubmission::findOrFail($id);
-        $this->authorize('update', $submission);
         $submission->update(['status' => $status]);
     }
 
@@ -42,7 +51,7 @@ class ContactSubmissions extends Component
 
         return view('livewire.manage.contact-submissions', [
             'submissions' => $submissions,
-            'statuses'    => ContactSubmissionStatus::cases(),
+            'statuses' => ContactSubmissionStatus::cases(),
         ]);
     }
 }

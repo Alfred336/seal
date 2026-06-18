@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Manage;
 
+use App\Enums\Permission;
 use App\Enums\SubscriptionStatus;
 use App\Models\Subscription;
 use Illuminate\View\View;
@@ -18,21 +19,29 @@ class Subscriptions extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $status = '';
 
-    public function updatingSearch(): void { $this->resetPage(); }
-    public function updatingStatus(): void { $this->resetPage(); }
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatus(): void
+    {
+        $this->resetPage();
+    }
 
     public function unsubscribe(int $id): void
     {
+        abort_unless(auth()->user()->can(Permission::SubscriptionsManage->value), 403);
         $sub = Subscription::findOrFail($id);
-        $this->authorize('update', $sub);
         $sub->update(['status' => SubscriptionStatus::Unsubscribed, 'unsubscribed_at' => now()]);
     }
 
     public function exportCsv(): StreamedResponse
     {
-        $this->authorize('update', Subscription::class);
+        abort_unless(auth()->user()->can(Permission::SubscriptionsManage->value), 403);
 
         $rows = Subscription::query()
             ->when($this->search, fn ($q) => $q->where('email', 'like', "%{$this->search}%"))
@@ -53,7 +62,7 @@ class Subscriptions extends Component
                 ]);
             }
             fclose($out);
-        }, 'subscribers-' . now()->format('Y-m-d') . '.csv', ['Content-Type' => 'text/csv']);
+        }, 'subscribers-'.now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function render(): View
@@ -66,7 +75,7 @@ class Subscriptions extends Component
 
         return view('livewire.manage.subscriptions', [
             'subscriptions' => $subscriptions,
-            'statuses'      => SubscriptionStatus::cases(),
+            'statuses' => SubscriptionStatus::cases(),
         ]);
     }
 }

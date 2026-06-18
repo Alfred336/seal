@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Manage;
 
+use App\Enums\Permission;
 use App\Models\Category;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -16,20 +17,25 @@ class Categories extends Component
     public string $search = '';
 
     public ?int $editingId = null;
+
     public string $editName = '';
+
     public string $editSlug = '';
+
     public string $editColor = '';
 
     public string $newName = '';
+
     public string $newSlug = '';
+
     public string $newColor = '';
 
     public function create(): void
     {
-        $this->authorize('create', Category::class);
+        abort_unless(auth()->user()->can(Permission::CategoriesManage->value), 403);
         $this->validate([
-            'newName'  => ['required', 'string', 'max:50', 'unique:categories,name'],
-            'newSlug'  => ['required', 'string', 'max:100', 'unique:categories,slug'],
+            'newName' => ['required', 'string', 'max:50', 'unique:categories,name'],
+            'newSlug' => ['required', 'string', 'max:100', 'unique:categories,slug'],
             'newColor' => ['nullable', 'string', 'max:7'],
         ]);
         Category::create(['name' => $this->newName, 'slug' => $this->newSlug, 'color' => $this->newColor ?: null]);
@@ -45,18 +51,18 @@ class Categories extends Component
     {
         $category = Category::findOrFail($id);
         $this->editingId = $id;
-        $this->editName  = $category->name;
-        $this->editSlug  = $category->slug ?? '';
+        $this->editName = $category->name;
+        $this->editSlug = $category->slug ?? '';
         $this->editColor = $category->color ?? '';
     }
 
     public function saveEdit(): void
     {
+        abort_unless(auth()->user()->can(Permission::CategoriesManage->value), 403);
         $category = Category::findOrFail($this->editingId);
-        $this->authorize('update', $category);
         $this->validate([
-            'editName'  => ['required', 'string', 'max:50', "unique:categories,name,{$this->editingId}"],
-            'editSlug'  => ['required', 'string', 'max:100', "unique:categories,slug,{$this->editingId}"],
+            'editName' => ['required', 'string', 'max:50', "unique:categories,name,{$this->editingId}"],
+            'editSlug' => ['required', 'string', 'max:100', "unique:categories,slug,{$this->editingId}"],
             'editColor' => ['nullable', 'string', 'max:7'],
         ]);
         $category->update(['name' => $this->editName, 'slug' => $this->editSlug, 'color' => $this->editColor ?: null]);
@@ -65,8 +71,8 @@ class Categories extends Component
 
     public function delete(int $id): void
     {
+        abort_unless(auth()->user()->can(Permission::CategoriesManage->value), 403);
         $category = Category::findOrFail($id);
-        $this->authorize('delete', $category);
         $category->delete();
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Manage;
 
+use App\Enums\Permission;
 use App\Models\Project;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -16,23 +17,38 @@ class Projects extends Component
     use WithPagination;
 
     public string $search = '';
+
     public ?int $editingId = null;
+
     public bool $showForm = false;
 
     // form fields
     public string $title = '';
+
     public string $industry = '';
+
     public string $tech_stack = '';
+
     public string $description = '';
+
     public string $client_name = '';
+
     public string $outcome = '';
+
     public string $image_path = '';
+
     public string $live_url = '';
+
     public bool $featured = false;
+
     public bool $active = true;
+
     public string $completed_at = '';
 
-    public function updatingSearch(): void { $this->resetPage(); }
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
 
     public function showCreateForm(): void
     {
@@ -43,7 +59,7 @@ class Projects extends Component
 
     public function create(): void
     {
-        $this->authorize('create', Project::class);
+        abort_unless(auth()->user()->can(Permission::ProjectsManage->value), 403);
         $this->validateForm();
         $max = Project::max('sort_order') ?? -1;
         Project::create([...$this->formData(), 'sort_order' => $max + 1]);
@@ -54,25 +70,25 @@ class Projects extends Component
     public function startEdit(int $id): void
     {
         $project = Project::findOrFail($id);
-        $this->showForm    = true;
-        $this->editingId   = $id;
-        $this->title        = $project->title;
-        $this->industry     = $project->industry ?? '';
-        $this->tech_stack   = $project->tech_stack ?? '';
-        $this->description  = $project->description ?? '';
-        $this->client_name  = $project->client_name ?? '';
-        $this->outcome      = $project->outcome ?? '';
-        $this->image_path   = $project->image_path ?? '';
-        $this->live_url     = $project->live_url ?? '';
-        $this->featured     = $project->featured;
-        $this->active       = $project->active;
+        $this->showForm = true;
+        $this->editingId = $id;
+        $this->title = $project->title;
+        $this->industry = $project->industry ?? '';
+        $this->tech_stack = $project->tech_stack ?? '';
+        $this->description = $project->description ?? '';
+        $this->client_name = $project->client_name ?? '';
+        $this->outcome = $project->outcome ?? '';
+        $this->image_path = $project->image_path ?? '';
+        $this->live_url = $project->live_url ?? '';
+        $this->featured = $project->featured;
+        $this->active = $project->active;
         $this->completed_at = $project->completed_at?->format('Y-m-d') ?? '';
     }
 
     public function saveEdit(): void
     {
         $project = Project::findOrFail($this->editingId);
-        $this->authorize('update', $project);
+        abort_unless(auth()->user()->can(Permission::ProjectsManage->value), 403);
         $this->validateForm();
         $project->update($this->formData());
         $this->resetForm();
@@ -82,22 +98,22 @@ class Projects extends Component
 
     public function toggleActive(int $id): void
     {
+        abort_unless(auth()->user()->can(Permission::ProjectsManage->value), 403);
         $project = Project::findOrFail($id);
-        $this->authorize('update', $project);
         $project->update(['active' => ! $project->active]);
     }
 
     public function toggleFeatured(int $id): void
     {
+        abort_unless(auth()->user()->can(Permission::ProjectsManage->value), 403);
         $project = Project::findOrFail($id);
-        $this->authorize('update', $project);
         $project->update(['featured' => ! $project->featured]);
     }
 
     public function delete(int $id): void
     {
+        abort_unless(auth()->user()->can(Permission::ProjectsManage->value), 403);
         $project = Project::findOrFail($id);
-        $this->authorize('delete', $project);
         $project->delete();
     }
 
@@ -121,16 +137,16 @@ class Projects extends Component
     private function validateForm(): void
     {
         $this->validate([
-            'title'        => ['required', 'string', 'max:150'],
-            'industry'     => ['nullable', 'string', 'max:100'],
-            'tech_stack'   => ['nullable', 'string', 'max:150'],
-            'description'  => ['nullable', 'string'],
-            'client_name'  => ['nullable', 'string', 'max:150'],
-            'outcome'      => ['nullable', 'string'],
-            'image_path'   => ['nullable', 'string', 'max:500'],
-            'live_url'     => ['nullable', 'url', 'max:500'],
-            'featured'     => ['boolean'],
-            'active'       => ['boolean'],
+            'title' => ['required', 'string', 'max:150'],
+            'industry' => ['nullable', 'string', 'max:100'],
+            'tech_stack' => ['nullable', 'string', 'max:150'],
+            'description' => ['nullable', 'string'],
+            'client_name' => ['nullable', 'string', 'max:150'],
+            'outcome' => ['nullable', 'string'],
+            'image_path' => ['nullable', 'string', 'max:500'],
+            'live_url' => ['nullable', 'url', 'max:500'],
+            'featured' => ['boolean'],
+            'active' => ['boolean'],
             'completed_at' => ['nullable', 'date'],
         ]);
     }
@@ -139,16 +155,16 @@ class Projects extends Component
     private function formData(): array
     {
         return [
-            'title'        => $this->title,
-            'industry'     => $this->industry ?: null,
-            'tech_stack'   => $this->tech_stack ?: null,
-            'description'  => $this->description ?: null,
-            'client_name'  => $this->client_name ?: null,
-            'outcome'      => $this->outcome ?: null,
-            'image_path'   => $this->image_path ?: null,
-            'live_url'     => $this->live_url ?: null,
-            'featured'     => $this->featured,
-            'active'       => $this->active,
+            'title' => $this->title,
+            'industry' => $this->industry ?: null,
+            'tech_stack' => $this->tech_stack ?: null,
+            'description' => $this->description ?: null,
+            'client_name' => $this->client_name ?: null,
+            'outcome' => $this->outcome ?: null,
+            'image_path' => $this->image_path ?: null,
+            'live_url' => $this->live_url ?: null,
+            'featured' => $this->featured,
+            'active' => $this->active,
             'completed_at' => $this->completed_at ?: null,
         ];
     }
@@ -157,6 +173,6 @@ class Projects extends Component
     {
         $this->reset('title', 'industry', 'tech_stack', 'description', 'client_name', 'outcome', 'image_path', 'live_url', 'completed_at');
         $this->featured = false;
-        $this->active   = true;
+        $this->active = true;
     }
 }

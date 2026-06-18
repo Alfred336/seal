@@ -56,8 +56,6 @@
                                 <div class="flex justify-end gap-2">
                                     @can('update', $tag)
                                         <flux:button wire:click="startEdit({{ $tag->id }})" size="sm" variant="ghost" icon="pencil" />
-                                    @endcan
-                                    @can('delete', $tag)
                                         <flux:button wire:click="delete({{ $tag->id }})" wire:confirm="{{ __('Delete this tag?') }}" size="sm" variant="ghost" icon="trash" />
                                     @endcan
                                 </div>

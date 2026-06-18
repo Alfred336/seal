@@ -43,7 +43,7 @@
                             </flux:badge>
                         </td>
                         <td class="px-4 py-3 text-zinc-500 whitespace-nowrap">
-                            {{ $post->published_at?->formatLocalized('%b %d, %Y') ?? '—' }}
+                            {{ $post->published_at?->isoFormat('MMM D, YYYY') ?? '—' }}
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex items-center justify-end gap-2">

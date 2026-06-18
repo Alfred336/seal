@@ -40,7 +40,7 @@
                         </td>
                         <td class="px-4 py-3 text-right">
                             @if ($sub->status->value === 'active')
-                                @can('update', $sub)
+                                @can('delete', $sub)
                                     <flux:button wire:click="unsubscribe({{ $sub->id }})" wire:confirm="{{ __('Unsubscribe this email?') }}" size="sm" variant="ghost">
                                         {{ __('Unsubscribe') }}
                                     </flux:button>

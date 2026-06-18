@@ -14,11 +14,11 @@ class CallRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'full_name'      => ['required', 'string', 'max:100'],
-            'email'          => ['required', 'email', 'max:255'],
-            'phone'          => ['required', 'string', 'max:30'],
+            'full_name' => ['required', 'string', 'max:100'],
+            'email' => ['required', 'email', 'max:255'],
+            'phone' => ['required', 'string', 'max:30'],
             'preferred_date' => ['required', 'date', 'after:today'],
-            'notes'          => ['nullable', 'string', 'max:2000'],
+            'notes' => ['nullable', 'string', 'max:2000'],
         ];
     }
 }

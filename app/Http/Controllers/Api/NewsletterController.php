@@ -19,17 +19,17 @@ class NewsletterController extends ApiController
             }
 
             $subscription->update([
-                'status'            => SubscriptionStatus::Active,
-                'source'            => $request->input('source'),
-                'subscribed_at'     => now(),
-                'unsubscribed_at'   => null,
+                'status' => SubscriptionStatus::Active,
+                'source' => $request->input('source'),
+                'subscribed_at' => now(),
+                'unsubscribed_at' => null,
             ]);
 
             return response()->json(['message' => 'Welcome back! You have been re-subscribed.'], 200);
         }
 
         Subscription::create([
-            'email'  => $request->input('email'),
+            'email' => $request->input('email'),
             'source' => $request->input('source'),
         ]);
 

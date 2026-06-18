@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CallController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\NewsletterController;
@@ -9,22 +10,16 @@ use App\Http\Controllers\Api\ProjectRequestController;
 use App\Http\Controllers\Api\ServiceController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Public API Routes (consumed by React frontend)
-|--------------------------------------------------------------------------
-|
-| Implementation is provided in Stage 2. Routes are registered here so the
-| contract between Laravel and React is established early.
-|
-*/
+Route::post('login', [AuthController::class, 'login'])->name('api.login');
 
-Route::get('posts', [PostController::class, 'index'])->name('api.posts.index');
-Route::get('posts/{slug}', [PostController::class, 'show'])->name('api.posts.show');
+Route::middleware('auth:sanctum')->group(function (): void {
+    Route::get('posts', [PostController::class, 'index'])->name('api.posts.index');
+    Route::get('posts/{slug}', [PostController::class, 'show'])->name('api.posts.show');
 
-Route::get('services', [ServiceController::class, 'index'])->name('api.services.index');
+    Route::get('services', [ServiceController::class, 'index'])->name('api.services.index');
 
-Route::get('projects', [ProjectController::class, 'index'])->name('api.projects.index');
+    Route::get('projects', [ProjectController::class, 'index'])->name('api.projects.index');
+});
 
 Route::post('contact', [ContactController::class, 'store'])->name('api.contact.store');
 Route::post('calls', [CallController::class, 'store'])->name('api.calls.store');

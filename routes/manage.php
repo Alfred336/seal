@@ -19,54 +19,54 @@ Route::middleware(['auth', 'verified'])
     ->group(function (): void {
         // Blog
         Route::get('posts', Posts::class)
-            ->middleware('can:viewAny,App\Models\Post')
+            ->middleware('permission:posts.view|posts.manage-all')
             ->name('posts.index');
 
         Route::get('posts/create', PostForm::class)
-            ->middleware('can:create,App\Models\Post')
+            ->middleware('permission:posts.create|posts.manage-all')
             ->name('posts.create');
 
         Route::get('posts/{post}/edit', PostForm::class)
-            ->middleware('can:update,post')
+            ->middleware('permission:posts.view|posts.manage-all')
             ->name('posts.edit');
 
         Route::get('categories', Categories::class)
-            ->middleware('can:viewAny,App\Models\Category')
+            ->middleware('permission:categories.manage|posts.view')
             ->name('categories.index');
 
         Route::get('tags', Tags::class)
-            ->middleware('can:viewAny,App\Models\Tag')
+            ->middleware('permission:tags.manage|posts.view')
             ->name('tags.index');
 
         // Content
         Route::get('services', Services::class)
-            ->middleware('can:viewAny,App\Models\Service')
+            ->middleware('permission:services.view|services.manage')
             ->name('services.index');
 
         Route::get('projects', Projects::class)
-            ->middleware('can:viewAny,App\Models\Project')
+            ->middleware('permission:projects.view|projects.manage')
             ->name('projects.index');
 
         // Inquiries
         Route::get('contact-submissions', ContactSubmissions::class)
-            ->middleware('can:viewAny,App\Models\ContactSubmission')
+            ->middleware('permission:contact-submissions.view')
             ->name('contact-submissions.index');
 
         Route::get('call-requests', CallRequests::class)
-            ->middleware('can:viewAny,App\Models\CallRequest')
+            ->middleware('permission:call-requests.view')
             ->name('call-requests.index');
 
         Route::get('project-requests', ProjectRequests::class)
-            ->middleware('can:viewAny,App\Models\ProjectRequest')
+            ->middleware('permission:project-requests.view')
             ->name('project-requests.index');
 
         // Newsletter
         Route::get('subscriptions', Subscriptions::class)
-            ->middleware('can:viewAny,App\Models\Subscription')
+            ->middleware('permission:subscriptions.view')
             ->name('subscriptions.index');
 
         // Administration
         Route::get('users', Users::class)
-            ->middleware('can:viewAny,App\Models\User')
+            ->middleware('permission:users.view')
             ->name('users.index');
     });

@@ -23,9 +23,9 @@ class Dashboard extends Component
     public function render(): View
     {
         return view('dashboard', [
-            'stats'              => $this->stats(),
-            'recentPosts'        => Post::query()->with('author')->latest()->limit(5)->get(),
-            'recentSubmissions'  => ContactSubmission::query()->orderByDesc('submitted_at')->limit(5)->get(),
+            'stats' => $this->stats(),
+            'recentPosts' => Post::query()->with('author')->latest()->limit(5)->get(),
+            'recentSubmissions' => ContactSubmission::query()->orderByDesc('submitted_at')->limit(5)->get(),
         ]);
     }
 
@@ -33,16 +33,16 @@ class Dashboard extends Component
     private function stats(): array
     {
         return [
-            'users'               => User::count(),
-            'posts_total'         => Post::count(),
-            'posts_published'     => Post::where('status', PostStatus::Published)->count(),
-            'posts_draft'         => Post::where('status', PostStatus::Draft)->count(),
-            'services'            => Service::count(),
-            'projects'            => Project::count(),
+            'users' => User::count(),
+            'posts_total' => Post::count(),
+            'posts_published' => Post::where('status', PostStatus::Published)->count(),
+            'posts_draft' => Post::where('status', PostStatus::Draft)->count(),
+            'services' => Service::count(),
+            'projects' => Project::count(),
             'contact_submissions' => ContactSubmission::count(),
-            'call_requests'       => CallRequest::count(),
-            'project_requests'    => ProjectRequest::count(),
-            'subscribers'         => Subscription::count(),
+            'call_requests' => CallRequest::count(),
+            'project_requests' => ProjectRequest::count(),
+            'subscribers' => Subscription::count(),
         ];
     }
 }

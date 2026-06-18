@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Permission;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Http\Request;
@@ -11,6 +12,8 @@ class PostController extends ApiController
 {
     public function index(Request $request): ResourceCollection
     {
+        abort_unless($request->user()->can(Permission::PostsView->value), 403);
+
         $posts = Post::query()
             ->published()
             ->with(['author', 'category', 'tags'])
@@ -23,8 +26,10 @@ class PostController extends ApiController
         return PostResource::collection($posts);
     }
 
-    public function show(string $slug): PostResource
+    public function show(string $slug, Request $request): PostResource
     {
+        abort_unless($request->user()->can(Permission::PostsView->value), 403);
+
         $post = Post::query()
             ->published()
             ->where('slug', $slug)

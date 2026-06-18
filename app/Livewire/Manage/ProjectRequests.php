@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Manage;
 
+use App\Enums\Permission;
 use App\Enums\ProjectRequestStatus;
 use App\Models\ProjectRequest;
 use Illuminate\View\View;
@@ -17,15 +18,23 @@ class ProjectRequests extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $status = '';
 
-    public function updatingSearch(): void { $this->resetPage(); }
-    public function updatingStatus(): void { $this->resetPage(); }
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatus(): void
+    {
+        $this->resetPage();
+    }
 
     public function updateStatus(int $id, string $status): void
     {
+        abort_unless(auth()->user()->can(Permission::ProjectRequestsUpdate->value), 403);
         $request = ProjectRequest::findOrFail($id);
-        $this->authorize('update', $request);
         $request->update(['status' => $status]);
     }
 

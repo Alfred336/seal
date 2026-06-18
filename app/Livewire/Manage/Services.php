@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Manage;
 
+use App\Enums\Permission;
 use App\Models\Service;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -13,29 +14,34 @@ use Livewire\Component;
 class Services extends Component
 {
     public ?int $editingId = null;
+
     public string $editTitle = '';
+
     public string $editDescription = '';
+
     public string $editIcon = '';
 
     public string $newTitle = '';
+
     public string $newDescription = '';
+
     public string $newIcon = '';
 
     public function create(): void
     {
-        $this->authorize('create', Service::class);
+        abort_unless(auth()->user()->can(Permission::ServicesManage->value), 403);
         $this->validate([
-            'newTitle'       => ['required', 'string', 'max:100'],
+            'newTitle' => ['required', 'string', 'max:100'],
             'newDescription' => ['nullable', 'string'],
-            'newIcon'        => ['nullable', 'string', 'max:100'],
+            'newIcon' => ['nullable', 'string', 'max:100'],
         ]);
 
         $maxOrder = Service::max('sort_order') ?? -1;
         Service::create([
-            'title'       => $this->newTitle,
+            'title' => $this->newTitle,
             'description' => $this->newDescription ?: null,
-            'icon'        => $this->newIcon ?: null,
-            'sort_order'  => $maxOrder + 1,
+            'icon' => $this->newIcon ?: null,
+            'sort_order' => $maxOrder + 1,
         ]);
 
         $this->reset('newTitle', 'newDescription', 'newIcon');
@@ -44,25 +50,25 @@ class Services extends Component
     public function startEdit(int $id): void
     {
         $service = Service::findOrFail($id);
-        $this->editingId    = $id;
-        $this->editTitle       = $service->title;
+        $this->editingId = $id;
+        $this->editTitle = $service->title;
         $this->editDescription = $service->description ?? '';
-        $this->editIcon        = $service->icon ?? '';
+        $this->editIcon = $service->icon ?? '';
     }
 
     public function saveEdit(): void
     {
+        abort_unless(auth()->user()->can(Permission::ServicesManage->value), 403);
         $service = Service::findOrFail($this->editingId);
-        $this->authorize('update', $service);
         $this->validate([
-            'editTitle'       => ['required', 'string', 'max:100'],
+            'editTitle' => ['required', 'string', 'max:100'],
             'editDescription' => ['nullable', 'string'],
-            'editIcon'        => ['nullable', 'string', 'max:100'],
+            'editIcon' => ['nullable', 'string', 'max:100'],
         ]);
         $service->update([
-            'title'       => $this->editTitle,
+            'title' => $this->editTitle,
             'description' => $this->editDescription ?: null,
-            'icon'        => $this->editIcon ?: null,
+            'icon' => $this->editIcon ?: null,
         ]);
         $this->editingId = null;
     }
@@ -70,26 +76,24 @@ class Services extends Component
     public function toggleActive(int $id): void
     {
         $service = Service::findOrFail($id);
-        $this->authorize('update', $service);
+        abort_unless(auth()->user()->can(Permission::ServicesManage->value), 403);
         $service->update(['active' => ! $service->active]);
     }
 
     public function moveUp(int $id): void
     {
-        $this->authorize('update', Service::findOrFail($id));
         $this->swap($id, 'up');
     }
 
     public function moveDown(int $id): void
     {
-        $this->authorize('update', Service::findOrFail($id));
         $this->swap($id, 'down');
     }
 
     public function delete(int $id): void
     {
         $service = Service::findOrFail($id);
-        $this->authorize('delete', $service);
+        abort_unless(auth()->user()->can(Permission::ServicesManage->value), 403);
         $service->delete();
         $this->reindex();
     }
@@ -103,13 +107,18 @@ class Services extends Component
 
     private function swap(int $id, string $direction): void
     {
+        abort_unless(auth()->user()->can(Permission::ServicesManage->value), 403);
         $services = Service::ordered()->get();
         $index = $services->search(fn ($s) => $s->id === $id);
 
-        if ($index === false) return;
+        if ($index === false) {
+            return;
+        }
 
         $swapIndex = $direction === 'up' ? $index - 1 : $index + 1;
-        if ($swapIndex < 0 || $swapIndex >= $services->count()) return;
+        if ($swapIndex < 0 || $swapIndex >= $services->count()) {
+            return;
+        }
 
         [$a, $b] = [$services[$index], $services[$swapIndex]];
         [$a->sort_order, $b->sort_order] = [$b->sort_order, $a->sort_order];

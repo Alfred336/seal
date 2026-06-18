@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Manage;
 
-use App\Enums\PostStatus;
+use App\Enums\Permission;
 use App\Models\Post;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -17,15 +17,28 @@ class Posts extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $status = '';
 
-    public function updatingSearch(): void { $this->resetPage(); }
-    public function updatingStatus(): void { $this->resetPage(); }
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatus(): void
+    {
+        $this->resetPage();
+    }
 
     public function delete(int $id): void
     {
         $post = Post::findOrFail($id);
-        $this->authorize('delete', $post);
+        $user = auth()->user();
+        abort_unless(
+            $user->can(Permission::PostsManageAll->value) ||
+            ($user->can(Permission::PostsDeleteOwn->value) && $post->isOwnedBy($user)),
+            403
+        );
         $post->delete();
         $this->dispatch('notify', message: 'Post deleted.');
     }

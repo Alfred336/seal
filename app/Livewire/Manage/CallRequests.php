@@ -3,6 +3,7 @@
 namespace App\Livewire\Manage;
 
 use App\Enums\CallRequestStatus;
+use App\Enums\Permission;
 use App\Models\CallRequest;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -17,15 +18,23 @@ class CallRequests extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $status = '';
 
-    public function updatingSearch(): void { $this->resetPage(); }
-    public function updatingStatus(): void { $this->resetPage(); }
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatus(): void
+    {
+        $this->resetPage();
+    }
 
     public function updateStatus(int $id, string $status): void
     {
+        abort_unless(auth()->user()->can(Permission::CallRequestsUpdate->value), 403);
         $request = CallRequest::findOrFail($id);
-        $this->authorize('update', $request);
         $request->update(['status' => $status]);
     }
 

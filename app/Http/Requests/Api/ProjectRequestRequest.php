@@ -14,10 +14,10 @@ class ProjectRequestRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'full_name'    => ['required', 'string', 'max:100'],
-            'email'        => ['required', 'email', 'max:255'],
+            'full_name' => ['required', 'string', 'max:100'],
+            'email' => ['required', 'email', 'max:255'],
             'project_type' => ['required', 'string', 'max:50'],
-            'details'      => ['required', 'string', 'max:5000'],
+            'details' => ['required', 'string', 'max:5000'],
         ];
     }
 }

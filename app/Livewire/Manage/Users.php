@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Manage;
 
+use App\Enums\Permission;
 use App\Enums\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -18,39 +19,47 @@ class Users extends Component
     use WithPagination;
 
     public string $search = '';
+
     public ?int $editingId = null;
+
     public bool $showForm = false;
 
     // form fields
     public string $name = '';
+
     public string $email = '';
+
     public string $password = '';
+
     public string $selectedRole = '';
 
-    public function updatingSearch(): void { $this->resetPage(); }
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
 
     public function showCreateForm(): void
     {
         $this->resetForm();
         $this->editingId = null;
-        $this->showForm  = true;
+        $this->showForm = true;
     }
 
     public function create(): void
     {
-        $this->authorize('create', User::class);
+        abort_unless(auth()->user()->can(Permission::UsersManage->value), 403);
         $this->validate([
-            'name'         => ['required', 'string', 'max:255'],
-            'email'        => ['required', 'email', 'unique:users,email'],
-            'password'     => ['required', 'string', 'min:8'],
-            'selectedRole' => ['required', 'in:' . implode(',', array_column(Role::cases(), 'value'))],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
+            'selectedRole' => ['required', 'in:'.implode(',', array_column(Role::cases(), 'value'))],
         ]);
 
         $user = User::create([
-            'name'               => $this->name,
-            'email'              => $this->email,
-            'password'           => Hash::make($this->password),
-            'email_verified_at'  => now(),
+            'name' => $this->name,
+            'email' => $this->email,
+            'password' => Hash::make($this->password),
+            'email_verified_at' => now(),
         ]);
         $user->syncRoles([$this->selectedRole]);
 
@@ -61,24 +70,24 @@ class Users extends Component
     public function startEdit(int $id): void
     {
         $user = User::findOrFail($id);
-        $this->editingId    = $id;
-        $this->name         = $user->name;
-        $this->email        = $user->email;
-        $this->password     = '';
+        $this->editingId = $id;
+        $this->name = $user->name;
+        $this->email = $user->email;
+        $this->password = '';
         $this->selectedRole = $user->roles->first()?->name ?? '';
-        $this->showForm     = true;
+        $this->showForm = true;
     }
 
     public function saveEdit(): void
     {
         $user = User::findOrFail($this->editingId);
-        $this->authorize('update', $user);
+        abort_unless(auth()->user()->can(Permission::UsersManage->value) && $user->id !== auth()->id(), 403);
 
         $this->validate([
-            'name'         => ['required', 'string', 'max:255'],
-            'email'        => ['required', 'email', "unique:users,email,{$this->editingId}"],
-            'password'     => ['nullable', 'string', 'min:8'],
-            'selectedRole' => ['required', 'in:' . implode(',', array_column(Role::cases(), 'value'))],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', "unique:users,email,{$this->editingId}"],
+            'password' => ['nullable', 'string', 'min:8'],
+            'selectedRole' => ['required', 'in:'.implode(',', array_column(Role::cases(), 'value'))],
         ]);
 
         $data = ['name' => $this->name, 'email' => $this->email];
@@ -90,21 +99,21 @@ class Users extends Component
         $user->syncRoles([$this->selectedRole]);
 
         $this->resetForm();
-        $this->showForm  = false;
+        $this->showForm = false;
         $this->editingId = null;
     }
 
     public function toggleActive(int $id): void
     {
         $user = User::findOrFail($id);
-        $this->authorize('update', $user);
+        abort_unless(auth()->user()->can(Permission::UsersManage->value) && $user->id !== auth()->id(), 403);
         $user->update(['deactivated_at' => $user->isActive() ? now() : null]);
     }
 
     public function cancelForm(): void
     {
         $this->resetForm();
-        $this->showForm  = false;
+        $this->showForm = false;
         $this->editingId = null;
     }
 

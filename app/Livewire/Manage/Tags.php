@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Manage;
 
+use App\Enums\Permission;
 use App\Models\Tag;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -16,15 +17,18 @@ class Tags extends Component
     public string $search = '';
 
     public ?int $editingId = null;
+
     public string $editName = '';
+
     public string $editSlug = '';
 
     public string $newName = '';
+
     public string $newSlug = '';
 
     public function create(): void
     {
-        $this->authorize('create', Tag::class);
+        abort_unless(auth()->user()->can(Permission::TagsManage->value), 403);
         $this->validate([
             'newName' => ['required', 'string', 'max:50', 'unique:tags,name'],
             'newSlug' => ['required', 'string', 'max:100', 'unique:tags,slug'],
@@ -42,14 +46,14 @@ class Tags extends Component
     {
         $tag = Tag::findOrFail($id);
         $this->editingId = $id;
-        $this->editName  = $tag->name;
-        $this->editSlug  = $tag->slug ?? '';
+        $this->editName = $tag->name;
+        $this->editSlug = $tag->slug ?? '';
     }
 
     public function saveEdit(): void
     {
+        abort_unless(auth()->user()->can(Permission::TagsManage->value), 403);
         $tag = Tag::findOrFail($this->editingId);
-        $this->authorize('update', $tag);
         $this->validate([
             'editName' => ['required', 'string', 'max:50', "unique:tags,name,{$this->editingId}"],
             'editSlug' => ['required', 'string', 'max:100', "unique:tags,slug,{$this->editingId}"],
@@ -60,8 +64,8 @@ class Tags extends Component
 
     public function delete(int $id): void
     {
+        abort_unless(auth()->user()->can(Permission::TagsManage->value), 403);
         $tag = Tag::findOrFail($id);
-        $this->authorize('delete', $tag);
         $tag->delete();
     }
 
