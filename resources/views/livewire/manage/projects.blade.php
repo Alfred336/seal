@@ -1,81 +1,126 @@
 <div class="flex flex-col gap-4">
+
+    {{-- ─────────────────────────────────────────────────────────────────────
+         Page Header
+    ─────────────────────────────────────────────────────────────────────── --}}
     <div class="flex items-center justify-between">
         <flux:heading size="lg">{{ __('Projects') }}</flux:heading>
-        @can('create', App\Models\Project::class)
-            @if (!$showForm)
-                <flux:button wire:click="showCreateForm" variant="primary" icon="plus">{{ __('New Project') }}</flux:button>
-            @endif
+
+        {{-- Requires: projects.manage --}}
+        @can('projects.manage')
+            <flux:button wire:click="openCreateModal" variant="primary" icon="plus">
+                {{ __('New Project') }}
+            </flux:button>
         @endcan
     </div>
 
-    {{-- Create / Edit Form --}}
-    @if ($showForm)
-        <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-700 dark:bg-zinc-900">
-            <flux:heading size="sm" class="mb-4">{{ $editingId ? __('Edit Project') : __('New Project') }}</flux:heading>
+    {{-- ─────────────────────────────────────────────────────────────────────
+         Create / Edit Project Modal
+         Controlled by $showModal via wire:model.
+    ─────────────────────────────────────────────────────────────────────── --}}
+    <flux:modal wire:model="showModal" class="md:w-3xl">
+        <div class="space-y-4 p-1">
+
+            <flux:heading>
+                {{ $editingId ? __('Edit Project') : __('New Project') }}
+            </flux:heading>
+
             <div class="grid gap-4 sm:grid-cols-2">
-                <flux:field>
+                {{-- Title (required) --}}
+                <flux:field class="sm:col-span-2">
                     <flux:label>{{ __('Title') }} <flux:badge size="sm" color="red">required</flux:badge></flux:label>
                     <flux:input wire:model="title" />
                     <flux:error name="title" />
                 </flux:field>
+
+                {{-- Industry --}}
                 <flux:field>
                     <flux:label>{{ __('Industry') }}</flux:label>
                     <flux:input wire:model="industry" />
                     <flux:error name="industry" />
                 </flux:field>
+
+                {{-- Tech stack --}}
                 <flux:field>
                     <flux:label>{{ __('Tech Stack') }}</flux:label>
                     <flux:input wire:model="tech_stack" placeholder="Laravel, React, Tailwind" />
                     <flux:error name="tech_stack" />
                 </flux:field>
+
+                {{-- Client name --}}
                 <flux:field>
                     <flux:label>{{ __('Client Name') }}</flux:label>
                     <flux:input wire:model="client_name" />
                     <flux:error name="client_name" />
                 </flux:field>
+
+                {{-- Live URL --}}
                 <flux:field>
                     <flux:label>{{ __('Live URL') }}</flux:label>
                     <flux:input wire:model="live_url" type="url" placeholder="https://" />
                     <flux:error name="live_url" />
                 </flux:field>
-                <flux:field>
-                    <flux:label>{{ __('Completed At') }}</flux:label>
-                    <flux:input wire:model="completed_at" type="date" />
-                    <flux:error name="completed_at" />
-                </flux:field>
+
+                {{-- Image path --}}
                 <flux:field>
                     <flux:label>{{ __('Image Path') }}</flux:label>
                     <flux:input wire:model="image_path" placeholder="/images/project.jpg" />
                     <flux:error name="image_path" />
                 </flux:field>
+
+                {{-- Completed at --}}
+                <flux:field>
+                    <flux:label>{{ __('Completed At') }}</flux:label>
+                    <flux:input wire:model="completed_at" type="date" />
+                    <flux:error name="completed_at" />
+                </flux:field>
+
+                {{-- Featured + Active toggles --}}
                 <div class="flex items-end gap-6 pb-1">
                     <flux:checkbox wire:model="featured" :label="__('Featured')" />
-                    <flux:checkbox wire:model="active" :label="__('Active')" />
+                    <flux:checkbox wire:model="active"   :label="__('Active')"   />
                 </div>
             </div>
-            <flux:field class="mt-3">
+
+            {{-- Description --}}
+            <flux:field>
                 <flux:label>{{ __('Description') }}</flux:label>
                 <flux:textarea wire:model="description" rows="3" />
                 <flux:error name="description" />
             </flux:field>
-            <flux:field class="mt-3">
-                <flux:label>{{ __('Outcome') }}</flux:label>
+
+            {{-- Outcome --}}
+            <flux:field>
+                <flux:label>{{ __('Outcome / Results') }}</flux:label>
                 <flux:textarea wire:model="outcome" rows="2" />
                 <flux:error name="outcome" />
             </flux:field>
-            <div class="mt-4 flex justify-end gap-2">
+
+            {{-- Modal footer --}}
+            <div class="flex justify-end gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-700">
                 @if ($editingId)
                     <flux:button wire:click="saveEdit" variant="primary">{{ __('Save Changes') }}</flux:button>
                 @else
                     <flux:button wire:click="create" variant="primary">{{ __('Create Project') }}</flux:button>
                 @endif
-                <flux:button wire:click="cancelEdit" variant="ghost">{{ __('Cancel') }}</flux:button>
+                <flux:button wire:click="closeModal" variant="ghost">{{ __('Cancel') }}</flux:button>
             </div>
         </div>
-    @endif
+    </flux:modal>
 
-    <flux:input wire:model.live.debounce.300ms="search" placeholder="{{ __('Search projects…') }}" icon="magnifying-glass" class="max-w-xs" />
+    {{-- ─────────────────────────────────────────────────────────────────────
+         Search
+    ─────────────────────────────────────────────────────────────────────── --}}
+    <flux:input
+        wire:model.live.debounce.300ms="search"
+        placeholder="{{ __('Search projects…') }}"
+        icon="magnifying-glass"
+        class="max-w-xs"
+    />
 
+    {{-- ─────────────────────────────────────────────────────────────────────
+         Projects Table
+    ─────────────────────────────────────────────────────────────────────── --}}
     <div class="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700">
         <table class="w-full text-sm">
             <thead class="bg-zinc-50 text-left dark:bg-zinc-900">
@@ -93,14 +138,16 @@
                     <tr>
                         <td class="px-4 py-3 font-medium text-zinc-900 dark:text-white max-w-xs">
                             {{ $project->title }}
-                            @if($project->tech_stack)
+                            @if ($project->tech_stack)
                                 <p class="text-xs text-zinc-400 font-normal">{{ $project->tech_stack }}</p>
                             @endif
                         </td>
                         <td class="px-4 py-3 text-zinc-500">{{ $project->industry ?? '—' }}</td>
                         <td class="px-4 py-3 text-zinc-500">{{ $project->client_name ?? '—' }}</td>
+
+                        {{-- Featured toggle — requires: projects.manage --}}
                         <td class="px-4 py-3">
-                            @can('update', $project)
+                            @can('projects.manage')
                                 <flux:button wire:click="toggleFeatured({{ $project->id }})" size="sm" variant="ghost">
                                     <flux:badge :color="$project->featured ? 'yellow' : 'zinc'" size="sm">
                                         {{ $project->featured ? __('Yes') : __('No') }}
@@ -112,8 +159,10 @@
                                 </flux:badge>
                             @endcan
                         </td>
+
+                        {{-- Active toggle — requires: projects.manage --}}
                         <td class="px-4 py-3">
-                            @can('update', $project)
+                            @can('projects.manage')
                                 <flux:button wire:click="toggleActive({{ $project->id }})" size="sm" variant="ghost">
                                     <flux:badge :color="$project->active ? 'green' : 'zinc'" size="sm">
                                         {{ $project->active ? __('Active') : __('Inactive') }}
@@ -125,11 +174,17 @@
                                 </flux:badge>
                             @endcan
                         </td>
+
+                        {{-- Edit opens modal — requires: projects.manage --}}
                         <td class="px-4 py-3">
                             <div class="flex justify-end gap-2">
-                                @can('update', $project)
+                                @can('projects.manage')
                                     <flux:button wire:click="startEdit({{ $project->id }})" size="sm" variant="ghost" icon="pencil" />
-                                    <flux:button wire:click="delete({{ $project->id }})" wire:confirm="{{ __('Delete this project?') }}" size="sm" variant="ghost" icon="trash" />
+                                    <flux:button
+                                        wire:click="delete({{ $project->id }})"
+                                        wire:confirm="{{ __('Delete this project?') }}"
+                                        size="sm" variant="ghost" icon="trash"
+                                    />
                                 @endcan
                             </div>
                         </td>
@@ -143,5 +198,7 @@
         </table>
     </div>
 
+    {{-- Pagination --}}
     <div>{{ $projects->links() }}</div>
+
 </div>

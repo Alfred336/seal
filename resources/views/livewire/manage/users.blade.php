@@ -1,57 +1,90 @@
 <div class="flex flex-col gap-4">
+
+    {{-- ─────────────────────────────────────────────────────────────────────
+         Page Header
+    ─────────────────────────────────────────────────────────────────────── --}}
     <div class="flex items-center justify-between">
         <flux:heading size="lg">{{ __('Users') }}</flux:heading>
-        @can('create', App\Models\User::class)
-            @if (!$showForm)
-                <flux:button wire:click="showCreateForm" variant="primary" icon="plus">{{ __('New User') }}</flux:button>
-            @endif
+
+        {{-- Requires: users.manage --}}
+        @can('users.manage')
+            <flux:button wire:click="openCreateModal" variant="primary" icon="plus">
+                {{ __('New User') }}
+            </flux:button>
         @endcan
     </div>
 
-    {{-- Create / Edit Form --}}
-    @if ($showForm)
-        <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-700 dark:bg-zinc-900">
-            <flux:heading size="sm" class="mb-4">{{ $editingId ? __('Edit User') : __('New User') }}</flux:heading>
-            <div class="grid gap-4 sm:grid-cols-2">
-                <flux:field>
-                    <flux:label>{{ __('Name') }}</flux:label>
-                    <flux:input wire:model="name" />
-                    <flux:error name="name" />
-                </flux:field>
-                <flux:field>
-                    <flux:label>{{ __('Email') }}</flux:label>
-                    <flux:input wire:model="email" type="email" />
-                    <flux:error name="email" />
-                </flux:field>
-                <flux:field>
-                    <flux:label>{{ $editingId ? __('New Password (leave blank to keep)') : __('Password') }}</flux:label>
-                    <flux:input wire:model="password" type="password" />
-                    <flux:error name="password" />
-                </flux:field>
-                <flux:field>
-                    <flux:label>{{ __('Role') }}</flux:label>
-                    <flux:select wire:model="selectedRole">
-                        <flux:select.option value="">{{ __('Select role…') }}</flux:select.option>
-                        @foreach ($roles as $role)
-                            <flux:select.option :value="$role->value">{{ ucfirst($role->value) }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
-                    <flux:error name="selectedRole" />
-                </flux:field>
-            </div>
-            <div class="mt-4 flex justify-end gap-2">
+    {{-- ─────────────────────────────────────────────────────────────────────
+         Create / Edit User Modal
+         Controlled by $showModal via wire:model.
+    ─────────────────────────────────────────────────────────────────────── --}}
+    <flux:modal wire:model="showModal" class="md:w-lg">
+        <div class="space-y-4 p-1">
+
+            <flux:heading>
+                {{ $editingId ? __('Edit User') : __('New User') }}
+            </flux:heading>
+
+            {{-- Full name --}}
+            <flux:field>
+                <flux:label>{{ __('Name') }}</flux:label>
+                <flux:input wire:model="name" />
+                <flux:error name="name" />
+            </flux:field>
+
+            {{-- Email address --}}
+            <flux:field>
+                <flux:label>{{ __('Email') }}</flux:label>
+                <flux:input wire:model="email" type="email" />
+                <flux:error name="email" />
+            </flux:field>
+
+            {{-- Password --}}
+            <flux:field>
+                <flux:label>
+                    {{ $editingId ? __('New Password (leave blank to keep)') : __('Password') }}
+                </flux:label>
+                <flux:input wire:model="password" type="password" />
+                <flux:error name="password" />
+            </flux:field>
+
+            {{-- Role assignment --}}
+            <flux:field>
+                <flux:label>{{ __('Role') }}</flux:label>
+                <flux:select wire:model="selectedRole">
+                    <flux:select.option value="">{{ __('Select role…') }}</flux:select.option>
+                    @foreach ($roles as $role)
+                        <flux:select.option :value="$role->value">{{ ucfirst($role->value) }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+                <flux:error name="selectedRole" />
+            </flux:field>
+
+            {{-- Modal footer --}}
+            <div class="flex justify-end gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-700">
                 @if ($editingId)
                     <flux:button wire:click="saveEdit" variant="primary">{{ __('Save Changes') }}</flux:button>
                 @else
                     <flux:button wire:click="create" variant="primary">{{ __('Create User') }}</flux:button>
                 @endif
-                <flux:button wire:click="cancelForm" variant="ghost">{{ __('Cancel') }}</flux:button>
+                <flux:button wire:click="closeModal" variant="ghost">{{ __('Cancel') }}</flux:button>
             </div>
         </div>
-    @endif
+    </flux:modal>
 
-    <flux:input wire:model.live.debounce.300ms="search" placeholder="{{ __('Search users…') }}" icon="magnifying-glass" class="max-w-xs" />
+    {{-- ─────────────────────────────────────────────────────────────────────
+         Search
+    ─────────────────────────────────────────────────────────────────────── --}}
+    <flux:input
+        wire:model.live.debounce.300ms="search"
+        placeholder="{{ __('Search users…') }}"
+        icon="magnifying-glass"
+        class="max-w-xs"
+    />
 
+    {{-- ─────────────────────────────────────────────────────────────────────
+         Users Table
+    ─────────────────────────────────────────────────────────────────────── --}}
     <div class="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700">
         <table class="w-full text-sm">
             <thead class="bg-zinc-50 text-left dark:bg-zinc-900">
@@ -87,9 +120,14 @@
                                 {{ $user->isActive() ? __('Active') : __('Inactive') }}
                             </flux:badge>
                         </td>
+
+                        {{-- ─────────────────────────────────────────────────
+                             Actions: Edit (opens modal) + toggle active
+                             Requires: users.manage
+                        ───────────────────────────────────────────────────── --}}
                         <td class="px-4 py-3">
                             <div class="flex justify-end gap-2">
-                                @can('update', $user)
+                                @can('users.manage')
                                     <flux:button wire:click="startEdit({{ $user->id }})" size="sm" variant="ghost" icon="pencil" />
                                     <flux:button
                                         wire:click="toggleActive({{ $user->id }})"
@@ -102,11 +140,15 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="px-4 py-10 text-center text-zinc-400">{{ __('No users found.') }}</td></tr>
+                    <tr>
+                        <td colspan="6" class="px-4 py-10 text-center text-zinc-400">{{ __('No users found.') }}</td>
+                    </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 
+    {{-- Pagination --}}
     <div>{{ $users->links() }}</div>
+
 </div>

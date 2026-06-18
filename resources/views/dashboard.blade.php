@@ -1,19 +1,33 @@
 <div class="flex flex-col gap-6">
 
-    {{-- Stats Grid --}}
+    {{-- ─────────────────────────────────────────────────────────────────────
+         Stats Grid
+         Each card declares a "show" flag that resolves the Spatie permission
+         string directly via auth()->user()->can('permission.name').
+         No model-class arguments are passed — pure permission-string checks.
+    ─────────────────────────────────────────────────────────────────────── --}}
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         @php
             $cards = [
-                ['label' => __('Users'),              'value' => $stats['users'],              'icon' => 'users',                   'show' => auth()->user()->can('viewAny', App\Models\User::class)],
-                ['label' => __('Total Posts'),         'value' => $stats['posts_total'],         'icon' => 'document-text',           'show' => auth()->user()->can('viewAny', App\Models\Post::class)],
-                ['label' => __('Published'),           'value' => $stats['posts_published'],     'icon' => 'check-circle',            'show' => auth()->user()->can('viewAny', App\Models\Post::class)],
-                ['label' => __('Drafts'),              'value' => $stats['posts_draft'],         'icon' => 'pencil-square',           'show' => auth()->user()->can('viewAny', App\Models\Post::class)],
-                ['label' => __('Services'),            'value' => $stats['services'],            'icon' => 'briefcase',               'show' => auth()->user()->can('viewAny', App\Models\Service::class)],
-                ['label' => __('Projects'),            'value' => $stats['projects'],            'icon' => 'photo',                   'show' => auth()->user()->can('viewAny', App\Models\Project::class)],
-                ['label' => __('Contact'),             'value' => $stats['contact_submissions'], 'icon' => 'envelope',                'show' => auth()->user()->can('viewAny', App\Models\ContactSubmission::class)],
-                ['label' => __('Call Requests'),       'value' => $stats['call_requests'],       'icon' => 'phone',                   'show' => auth()->user()->can('viewAny', App\Models\CallRequest::class)],
-                ['label' => __('Project Requests'),    'value' => $stats['project_requests'],    'icon' => 'clipboard-document-list', 'show' => auth()->user()->can('viewAny', App\Models\ProjectRequest::class)],
-                ['label' => __('Subscribers'),         'value' => $stats['subscribers'],         'icon' => 'newspaper',               'show' => auth()->user()->can('viewAny', App\Models\Subscription::class)],
+                // users.view → administration stat
+                ['label' => __('Users'),           'value' => $stats['users'],              'icon' => 'users',                   'show' => auth()->user()->can('users.view')],
+
+                // posts.view → blog stats (total, published, drafts)
+                ['label' => __('Total Posts'),      'value' => $stats['posts_total'],        'icon' => 'document-text',           'show' => auth()->user()->can('posts.view')],
+                ['label' => __('Published'),        'value' => $stats['posts_published'],    'icon' => 'check-circle',            'show' => auth()->user()->can('posts.view')],
+                ['label' => __('Drafts'),           'value' => $stats['posts_draft'],        'icon' => 'pencil-square',           'show' => auth()->user()->can('posts.view')],
+
+                // services.view / projects.view → content stats
+                ['label' => __('Services'),         'value' => $stats['services'],           'icon' => 'briefcase',               'show' => auth()->user()->can('services.view')],
+                ['label' => __('Projects'),         'value' => $stats['projects'],           'icon' => 'photo',                   'show' => auth()->user()->can('projects.view')],
+
+                // inquiry-view permissions → inquiry stats
+                ['label' => __('Contact'),          'value' => $stats['contact_submissions'],'icon' => 'envelope',                'show' => auth()->user()->can('contact-submissions.view')],
+                ['label' => __('Call Requests'),    'value' => $stats['call_requests'],      'icon' => 'phone',                   'show' => auth()->user()->can('call-requests.view')],
+                ['label' => __('Project Requests'), 'value' => $stats['project_requests'],   'icon' => 'clipboard-document-list', 'show' => auth()->user()->can('project-requests.view')],
+
+                // subscriptions.view → marketing stat
+                ['label' => __('Subscribers'),      'value' => $stats['subscribers'],        'icon' => 'newspaper',               'show' => auth()->user()->can('subscriptions.view')],
             ];
         @endphp
 
@@ -30,10 +44,15 @@
         @endforeach
     </div>
 
-    {{-- Recent Activity --}}
+    {{-- ─────────────────────────────────────────────────────────────────────
+         Recent Activity
+         Both panels are individually gated by their respective view
+         permissions using direct Spatie permission strings.
+    ─────────────────────────────────────────────────────────────────────── --}}
     <div class="grid gap-6 lg:grid-cols-2">
 
-        @can('viewAny', App\Models\Post::class)
+        {{-- Recent Posts panel: requires "posts.view" permission --}}
+        @can('posts.view')
             <div class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
                 <div class="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
                     <flux:heading size="sm">{{ __('Recent Posts') }}</flux:heading>
@@ -57,7 +76,8 @@
             </div>
         @endcan
 
-        @can('viewAny', App\Models\ContactSubmission::class)
+        {{-- Recent Contact Submissions panel: requires "contact-submissions.view" permission --}}
+        @can('contact-submissions.view')
             <div class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
                 <div class="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
                     <flux:heading size="sm">{{ __('Recent Contact Submissions') }}</flux:heading>

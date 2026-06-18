@@ -7,6 +7,7 @@ use App\Livewire\Manage\PostForm;
 use App\Livewire\Manage\Posts;
 use App\Livewire\Manage\ProjectRequests;
 use App\Livewire\Manage\Projects;
+use App\Livewire\Manage\Roles;
 use App\Livewire\Manage\Services;
 use App\Livewire\Manage\Subscriptions;
 use App\Livewire\Manage\Tags;
@@ -69,4 +70,9 @@ Route::middleware(['auth', 'verified'])
         Route::get('users', Users::class)
             ->middleware('permission:users.view')
             ->name('users.index');
+
+        // Roles & Permissions — admin-only; requires "roles.manage" permission
+        Route::get('roles', Roles::class)
+            ->middleware('permission:roles.manage')
+            ->name('roles.index');
     });

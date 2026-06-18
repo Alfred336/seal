@@ -20,7 +20,8 @@ class Projects extends Component
 
     public ?int $editingId = null;
 
-    public bool $showForm = false;
+    /** Controls flux:modal visibility via wire:model. */
+    public bool $showModal = false;
 
     // form fields
     public string $title = '';
@@ -50,11 +51,11 @@ class Projects extends Component
         $this->resetPage();
     }
 
-    public function showCreateForm(): void
+    public function openCreateModal(): void
     {
         $this->resetForm();
-        $this->editingId = null;
-        $this->showForm = true;
+        $this->editingId  = null;
+        $this->showModal  = true;
     }
 
     public function create(): void
@@ -64,13 +65,13 @@ class Projects extends Component
         $max = Project::max('sort_order') ?? -1;
         Project::create([...$this->formData(), 'sort_order' => $max + 1]);
         $this->resetForm();
-        $this->showForm = false;
+        $this->showModal = false;
     }
 
     public function startEdit(int $id): void
     {
         $project = Project::findOrFail($id);
-        $this->showForm = true;
+        $this->showModal = true;
         $this->editingId = $id;
         $this->title = $project->title;
         $this->industry = $project->industry ?? '';
@@ -93,7 +94,7 @@ class Projects extends Component
         $project->update($this->formData());
         $this->resetForm();
         $this->editingId = null;
-        $this->showForm = false;
+        $this->showModal = false;
     }
 
     public function toggleActive(int $id): void
@@ -117,11 +118,11 @@ class Projects extends Component
         $project->delete();
     }
 
-    public function cancelEdit(): void
+    public function closeModal(): void
     {
         $this->resetForm();
-        $this->editingId = null;
-        $this->showForm = false;
+        $this->editingId  = null;
+        $this->showModal  = false;
     }
 
     public function render(): View

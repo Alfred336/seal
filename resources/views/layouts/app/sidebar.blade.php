@@ -11,83 +11,194 @@
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
+
+                {{-- ─────────────────────────────────────────────────────────
+                     Platform: always visible to every authenticated user.
+                ───────────────────────────────────────────────────────────── --}}
                 <flux:sidebar.group :heading="__('Platform')" class="grid">
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
 
-                @can('viewAny', App\Models\Post::class)
+                {{-- ─────────────────────────────────────────────────────────
+                     Blog section: shown to users with the "posts.view"
+                     permission.  Sub-items for Categories and Tags are gated
+                     by "categories.manage" / "tags.manage" respectively,
+                     because there is no separate "view-only" permission for
+                     those taxonomy resources.
+                ───────────────────────────────────────────────────────────── --}}
+                @can('posts.view')
                     <flux:sidebar.group :heading="__('Blog')" class="grid">
-                        <flux:sidebar.item icon="document-text" :href="route('manage.posts.index')" :current="request()->routeIs('manage.posts.*')" wire:navigate>
+
+                        {{-- Posts index --}}
+                        <flux:sidebar.item
+                            icon="document-text"
+                            :href="route('manage.posts.index')"
+                            :current="request()->routeIs('manage.posts.*')"
+                            wire:navigate
+                        >
                             {{ __('Posts') }}
                         </flux:sidebar.item>
 
-                        @can('viewAny', App\Models\Category::class)
-                            <flux:sidebar.item icon="rectangle-stack" :href="route('manage.categories.index')" :current="request()->routeIs('manage.categories.*')" wire:navigate>
+                        {{-- Categories: requires full taxonomy management permission --}}
+                        @can('categories.manage')
+                            <flux:sidebar.item
+                                icon="rectangle-stack"
+                                :href="route('manage.categories.index')"
+                                :current="request()->routeIs('manage.categories.*')"
+                                wire:navigate
+                            >
                                 {{ __('Categories') }}
                             </flux:sidebar.item>
                         @endcan
 
-                        @can('viewAny', App\Models\Tag::class)
-                            <flux:sidebar.item icon="tag" :href="route('manage.tags.index')" :current="request()->routeIs('manage.tags.*')" wire:navigate>
+                        {{-- Tags: requires full taxonomy management permission --}}
+                        @can('tags.manage')
+                            <flux:sidebar.item
+                                icon="tag"
+                                :href="route('manage.tags.index')"
+                                :current="request()->routeIs('manage.tags.*')"
+                                wire:navigate
+                            >
                                 {{ __('Tags') }}
                             </flux:sidebar.item>
                         @endcan
+
                     </flux:sidebar.group>
                 @endcan
 
-                @can('viewAny', App\Models\Service::class)
+                {{-- ─────────────────────────────────────────────────────────
+                     Content section: shown to users with "services.view".
+                     The Projects sub-item requires "projects.view".
+                ───────────────────────────────────────────────────────────── --}}
+                @can('services.view')
                     <flux:sidebar.group :heading="__('Content')" class="grid">
-                        <flux:sidebar.item icon="briefcase" :href="route('manage.services.index')" :current="request()->routeIs('manage.services.*')" wire:navigate>
+
+                        {{-- Services index --}}
+                        <flux:sidebar.item
+                            icon="briefcase"
+                            :href="route('manage.services.index')"
+                            :current="request()->routeIs('manage.services.*')"
+                            wire:navigate
+                        >
                             {{ __('Services') }}
                         </flux:sidebar.item>
 
-                        @can('viewAny', App\Models\Project::class)
-                            <flux:sidebar.item icon="photo" :href="route('manage.projects.index')" :current="request()->routeIs('manage.projects.*')" wire:navigate>
+                        {{-- Projects: separate view permission --}}
+                        @can('projects.view')
+                            <flux:sidebar.item
+                                icon="photo"
+                                :href="route('manage.projects.index')"
+                                :current="request()->routeIs('manage.projects.*')"
+                                wire:navigate
+                            >
                                 {{ __('Projects') }}
                             </flux:sidebar.item>
                         @endcan
+
                     </flux:sidebar.group>
                 @endcan
 
-                @can('manage-inquiries')
+                {{-- ─────────────────────────────────────────────────────────
+                     Inquiries section: shown when the user holds at least
+                     one of the three inquiry-view permissions.  Each
+                     sub-item is individually gated by its own permission.
+                ───────────────────────────────────────────────────────────── --}}
+                @canany(['contact-submissions.view', 'call-requests.view', 'project-requests.view'])
                     <flux:sidebar.group :heading="__('Inquiries')" class="grid">
-                        @can('viewAny', App\Models\ContactSubmission::class)
-                            <flux:sidebar.item icon="envelope" :href="route('manage.contact-submissions.index')" :current="request()->routeIs('manage.contact-submissions.*')" wire:navigate>
+
+                        {{-- Contact form submissions --}}
+                        @can('contact-submissions.view')
+                            <flux:sidebar.item
+                                icon="envelope"
+                                :href="route('manage.contact-submissions.index')"
+                                :current="request()->routeIs('manage.contact-submissions.*')"
+                                wire:navigate
+                            >
                                 {{ __('Contact') }}
                             </flux:sidebar.item>
                         @endcan
 
-                        @can('viewAny', App\Models\CallRequest::class)
-                            <flux:sidebar.item icon="phone" :href="route('manage.call-requests.index')" :current="request()->routeIs('manage.call-requests.*')" wire:navigate>
+                        {{-- Scheduled call requests --}}
+                        @can('call-requests.view')
+                            <flux:sidebar.item
+                                icon="phone"
+                                :href="route('manage.call-requests.index')"
+                                :current="request()->routeIs('manage.call-requests.*')"
+                                wire:navigate
+                            >
                                 {{ __('Call Requests') }}
                             </flux:sidebar.item>
                         @endcan
 
-                        @can('viewAny', App\Models\ProjectRequest::class)
-                            <flux:sidebar.item icon="clipboard-document-list" :href="route('manage.project-requests.index')" :current="request()->routeIs('manage.project-requests.*')" wire:navigate>
+                        {{-- Project brief requests --}}
+                        @can('project-requests.view')
+                            <flux:sidebar.item
+                                icon="clipboard-document-list"
+                                :href="route('manage.project-requests.index')"
+                                :current="request()->routeIs('manage.project-requests.*')"
+                                wire:navigate
+                            >
                                 {{ __('Project Requests') }}
                             </flux:sidebar.item>
                         @endcan
-                    </flux:sidebar.group>
-                @endcan
 
-                @can('viewAny', App\Models\Subscription::class)
+                    </flux:sidebar.group>
+                @endcanany
+
+                {{-- ─────────────────────────────────────────────────────────
+                     Marketing section: shown to users with
+                     "subscriptions.view" permission.
+                ───────────────────────────────────────────────────────────── --}}
+                @can('subscriptions.view')
                     <flux:sidebar.group :heading="__('Marketing')" class="grid">
-                        <flux:sidebar.item icon="newspaper" :href="route('manage.subscriptions.index')" :current="request()->routeIs('manage.subscriptions.*')" wire:navigate>
+                        <flux:sidebar.item
+                            icon="newspaper"
+                            :href="route('manage.subscriptions.index')"
+                            :current="request()->routeIs('manage.subscriptions.*')"
+                            wire:navigate
+                        >
                             {{ __('Newsletter') }}
                         </flux:sidebar.item>
                     </flux:sidebar.group>
                 @endcan
 
-                @can('viewAny', App\Models\User::class)
+                {{-- ─────────────────────────────────────────────────────────
+                     Administration section: shown to users with "users.view"
+                     OR "roles.manage" so each permission can independently
+                     reveal this group without requiring both.
+                ───────────────────────────────────────────────────────────── --}}
+                @canany(['users.view', 'roles.manage'])
                     <flux:sidebar.group :heading="__('Administration')" class="grid">
-                        <flux:sidebar.item icon="users" :href="route('manage.users.index')" :current="request()->routeIs('manage.users.*')" wire:navigate>
-                            {{ __('Users') }}
-                        </flux:sidebar.item>
+
+                        {{-- Users management: requires users.view --}}
+                        @can('users.view')
+                            <flux:sidebar.item
+                                icon="users"
+                                :href="route('manage.users.index')"
+                                :current="request()->routeIs('manage.users.*')"
+                                wire:navigate
+                            >
+                                {{ __('Users') }}
+                            </flux:sidebar.item>
+                        @endcan
+
+                        {{-- Roles & Permissions management: requires roles.manage --}}
+                        @can('roles.manage')
+                            <flux:sidebar.item
+                                icon="shield-check"
+                                :href="route('manage.roles.index')"
+                                :current="request()->routeIs('manage.roles.*')"
+                                wire:navigate
+                            >
+                                {{ __('Roles & Permissions') }}
+                            </flux:sidebar.item>
+                        @endcan
+
                     </flux:sidebar.group>
-                @endcan
+                @endcanany
+
             </flux:sidebar.nav>
 
             <flux:spacer />

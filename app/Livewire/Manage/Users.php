@@ -22,7 +22,8 @@ class Users extends Component
 
     public ?int $editingId = null;
 
-    public bool $showForm = false;
+    /** Controls flux:modal visibility via wire:model. */
+    public bool $showModal = false;
 
     // form fields
     public string $name = '';
@@ -38,11 +39,11 @@ class Users extends Component
         $this->resetPage();
     }
 
-    public function showCreateForm(): void
+    public function openCreateModal(): void
     {
         $this->resetForm();
         $this->editingId = null;
-        $this->showForm = true;
+        $this->showModal = true;
     }
 
     public function create(): void
@@ -64,7 +65,7 @@ class Users extends Component
         $user->syncRoles([$this->selectedRole]);
 
         $this->resetForm();
-        $this->showForm = false;
+        $this->showModal = false;
     }
 
     public function startEdit(int $id): void
@@ -75,7 +76,7 @@ class Users extends Component
         $this->email = $user->email;
         $this->password = '';
         $this->selectedRole = $user->roles->first()?->name ?? '';
-        $this->showForm = true;
+        $this->showModal = true;
     }
 
     public function saveEdit(): void
@@ -99,7 +100,7 @@ class Users extends Component
         $user->syncRoles([$this->selectedRole]);
 
         $this->resetForm();
-        $this->showForm = false;
+        $this->showModal = false;
         $this->editingId = null;
     }
 
@@ -110,10 +111,10 @@ class Users extends Component
         $user->update(['deactivated_at' => $user->isActive() ? now() : null]);
     }
 
-    public function cancelForm(): void
+    public function closeModal(): void
     {
         $this->resetForm();
-        $this->showForm = false;
+        $this->showModal = false;
         $this->editingId = null;
     }
 

@@ -16,6 +16,9 @@ class Tags extends Component
 {
     public string $search = '';
 
+    /** Controls flux:modal visibility via wire:model. */
+    public bool $showModal = false;
+
     public ?int $editingId = null;
 
     public string $editName = '';
@@ -26,6 +29,19 @@ class Tags extends Component
 
     public string $newSlug = '';
 
+    /**
+     * Open the modal in create mode.
+     * Requires: tags.manage
+     */
+    public function openCreateModal(): void
+    {
+        abort_unless(auth()->user()->can(Permission::TagsManage->value), 403);
+        $this->reset('newName', 'newSlug');
+        $this->resetValidation();
+        $this->editingId = null;
+        $this->showModal = true;
+    }
+
     public function create(): void
     {
         abort_unless(auth()->user()->can(Permission::TagsManage->value), 403);
@@ -35,6 +51,7 @@ class Tags extends Component
         ]);
         Tag::create(['name' => $this->newName, 'slug' => $this->newSlug]);
         $this->reset('newName', 'newSlug');
+        $this->showModal = false;
     }
 
     public function updatedNewName(string $value): void
@@ -45,9 +62,11 @@ class Tags extends Component
     public function startEdit(int $id): void
     {
         $tag = Tag::findOrFail($id);
+        $this->resetValidation();
         $this->editingId = $id;
-        $this->editName = $tag->name;
-        $this->editSlug = $tag->slug ?? '';
+        $this->editName  = $tag->name;
+        $this->editSlug  = $tag->slug ?? '';
+        $this->showModal = true;
     }
 
     public function saveEdit(): void
@@ -60,6 +79,15 @@ class Tags extends Component
         ]);
         $tag->update(['name' => $this->editName, 'slug' => $this->editSlug]);
         $this->editingId = null;
+        $this->showModal = false;
+    }
+
+    /** Close modal without saving. */
+    public function closeModal(): void
+    {
+        $this->showModal  = false;
+        $this->editingId  = null;
+        $this->resetValidation();
     }
 
     public function delete(int $id): void

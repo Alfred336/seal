@@ -16,6 +16,9 @@ class Categories extends Component
 {
     public string $search = '';
 
+    /** Controls flux:modal visibility via wire:model. */
+    public bool $showModal = false;
+
     public ?int $editingId = null;
 
     public string $editName = '';
@@ -30,16 +33,30 @@ class Categories extends Component
 
     public string $newColor = '';
 
+    /**
+     * Open the modal in create mode.
+     * Requires: categories.manage
+     */
+    public function openCreateModal(): void
+    {
+        abort_unless(auth()->user()->can(Permission::CategoriesManage->value), 403);
+        $this->reset('newName', 'newSlug', 'newColor');
+        $this->resetValidation();
+        $this->editingId = null;
+        $this->showModal = true;
+    }
+
     public function create(): void
     {
         abort_unless(auth()->user()->can(Permission::CategoriesManage->value), 403);
         $this->validate([
-            'newName' => ['required', 'string', 'max:50', 'unique:categories,name'],
-            'newSlug' => ['required', 'string', 'max:100', 'unique:categories,slug'],
+            'newName'  => ['required', 'string', 'max:50', 'unique:categories,name'],
+            'newSlug'  => ['required', 'string', 'max:100', 'unique:categories,slug'],
             'newColor' => ['nullable', 'string', 'max:7'],
         ]);
         Category::create(['name' => $this->newName, 'slug' => $this->newSlug, 'color' => $this->newColor ?: null]);
         $this->reset('newName', 'newSlug', 'newColor');
+        $this->showModal = false;
     }
 
     public function updatedNewName(string $value): void
@@ -50,10 +67,12 @@ class Categories extends Component
     public function startEdit(int $id): void
     {
         $category = Category::findOrFail($id);
-        $this->editingId = $id;
-        $this->editName = $category->name;
-        $this->editSlug = $category->slug ?? '';
-        $this->editColor = $category->color ?? '';
+        $this->resetValidation();
+        $this->editingId  = $id;
+        $this->editName   = $category->name;
+        $this->editSlug   = $category->slug ?? '';
+        $this->editColor  = $category->color ?? '';
+        $this->showModal  = true;
     }
 
     public function saveEdit(): void
@@ -61,12 +80,21 @@ class Categories extends Component
         abort_unless(auth()->user()->can(Permission::CategoriesManage->value), 403);
         $category = Category::findOrFail($this->editingId);
         $this->validate([
-            'editName' => ['required', 'string', 'max:50', "unique:categories,name,{$this->editingId}"],
-            'editSlug' => ['required', 'string', 'max:100', "unique:categories,slug,{$this->editingId}"],
+            'editName'  => ['required', 'string', 'max:50', "unique:categories,name,{$this->editingId}"],
+            'editSlug'  => ['required', 'string', 'max:100', "unique:categories,slug,{$this->editingId}"],
             'editColor' => ['nullable', 'string', 'max:7'],
         ]);
         $category->update(['name' => $this->editName, 'slug' => $this->editSlug, 'color' => $this->editColor ?: null]);
         $this->editingId = null;
+        $this->showModal = false;
+    }
+
+    /** Close modal without saving. */
+    public function closeModal(): void
+    {
+        $this->showModal  = false;
+        $this->editingId  = null;
+        $this->resetValidation();
     }
 
     public function delete(int $id): void

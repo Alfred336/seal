@@ -13,6 +13,9 @@ use Livewire\Component;
 #[Layout('layouts.app')]
 class Services extends Component
 {
+    /** Controls flux:modal visibility via wire:model. */
+    public bool $showModal = false;
+
     public ?int $editingId = null;
 
     public string $editTitle = '';
@@ -27,33 +30,49 @@ class Services extends Component
 
     public string $newIcon = '';
 
+    /**
+     * Open the modal in create mode.
+     * Requires: services.manage
+     */
+    public function openCreateModal(): void
+    {
+        abort_unless(auth()->user()->can(Permission::ServicesManage->value), 403);
+        $this->reset('newTitle', 'newDescription', 'newIcon');
+        $this->resetValidation();
+        $this->editingId = null;
+        $this->showModal = true;
+    }
+
     public function create(): void
     {
         abort_unless(auth()->user()->can(Permission::ServicesManage->value), 403);
         $this->validate([
-            'newTitle' => ['required', 'string', 'max:100'],
+            'newTitle'       => ['required', 'string', 'max:100'],
             'newDescription' => ['nullable', 'string'],
-            'newIcon' => ['nullable', 'string', 'max:100'],
+            'newIcon'        => ['nullable', 'string', 'max:100'],
         ]);
 
         $maxOrder = Service::max('sort_order') ?? -1;
         Service::create([
-            'title' => $this->newTitle,
+            'title'       => $this->newTitle,
             'description' => $this->newDescription ?: null,
-            'icon' => $this->newIcon ?: null,
-            'sort_order' => $maxOrder + 1,
+            'icon'        => $this->newIcon ?: null,
+            'sort_order'  => $maxOrder + 1,
         ]);
 
         $this->reset('newTitle', 'newDescription', 'newIcon');
+        $this->showModal = false;
     }
 
     public function startEdit(int $id): void
     {
         $service = Service::findOrFail($id);
-        $this->editingId = $id;
-        $this->editTitle = $service->title;
+        $this->resetValidation();
+        $this->editingId      = $id;
+        $this->editTitle      = $service->title;
         $this->editDescription = $service->description ?? '';
-        $this->editIcon = $service->icon ?? '';
+        $this->editIcon       = $service->icon ?? '';
+        $this->showModal      = true;
     }
 
     public function saveEdit(): void
@@ -61,16 +80,25 @@ class Services extends Component
         abort_unless(auth()->user()->can(Permission::ServicesManage->value), 403);
         $service = Service::findOrFail($this->editingId);
         $this->validate([
-            'editTitle' => ['required', 'string', 'max:100'],
+            'editTitle'       => ['required', 'string', 'max:100'],
             'editDescription' => ['nullable', 'string'],
-            'editIcon' => ['nullable', 'string', 'max:100'],
+            'editIcon'        => ['nullable', 'string', 'max:100'],
         ]);
         $service->update([
-            'title' => $this->editTitle,
+            'title'       => $this->editTitle,
             'description' => $this->editDescription ?: null,
-            'icon' => $this->editIcon ?: null,
+            'icon'        => $this->editIcon ?: null,
         ]);
         $this->editingId = null;
+        $this->showModal = false;
+    }
+
+    /** Close modal without saving. */
+    public function closeModal(): void
+    {
+        $this->showModal  = false;
+        $this->editingId  = null;
+        $this->resetValidation();
     }
 
     public function toggleActive(int $id): void
