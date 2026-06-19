@@ -1,167 +1,30 @@
-<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-6">
 
-    {{-- ─────────────────────────────────────────────────────────────────────
-         Page Header
-         "New Post" opens a floating modal instead of navigating to a
-         separate page.  Requires: posts.create OR posts.manage-all
-    ─────────────────────────────────────────────────────────────────────── --}}
+    {{-- Page header --}}
     <div class="flex items-center justify-between">
-        <flux:heading size="lg">{{ __('Blog Posts') }}</flux:heading>
+        <div>
+            <flux:heading size="lg">{{ __('Blog Posts') }}</flux:heading>
+            <flux:text class="text-sm text-zinc-500 mt-0.5">
+                {{ __('Manage and publish your blog content.') }}
+            </flux:text>
+        </div>
 
         @can('posts.create')
-            <flux:button wire:click="openCreateModal" variant="primary" icon="plus">
+            <flux:button :href="route('manage.posts.create')" wire:navigate variant="primary" icon="plus">
                 {{ __('New Post') }}
             </flux:button>
         @endcan
     </div>
 
-    {{-- ─────────────────────────────────────────────────────────────────────
-         Create / Edit Post Modal
-         Controlled by $showModal via wire:model.
-         The same modal serves both create (editingId = null) and
-         edit (editingId = post ID) modes.
-    ─────────────────────────────────────────────────────────────────────── --}}
-    <flux:modal wire:model="showModal" class="md:w-3xl">
-        <div class="space-y-5 p-1">
-
-            {{-- Modal heading --}}
-            <flux:heading size="lg">
-                {{ $editingId ? __('Edit Post') : __('New Post') }}
-            </flux:heading>
-
-            {{-- ── Row 1: Title + Slug ──────────────────────────────── --}}
-            <div class="grid sm:grid-cols-2 gap-4">
-                <flux:field>
-                    <flux:label>{{ __('Title') }} <flux:badge size="sm" color="red">required</flux:badge></flux:label>
-                    <flux:input wire:model.live.debounce.400ms="title" placeholder="{{ __('Post title') }}" />
-                    <flux:error name="title" />
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>{{ __('Slug') }}</flux:label>
-                    <flux:input wire:model="slug" placeholder="post-slug" />
-                    <flux:error name="slug" />
-                </flux:field>
-            </div>
-
-            {{-- ── Row 2: Category + Status + Read time ────────────── --}}
-            <div class="grid sm:grid-cols-3 gap-4">
-                <flux:field>
-                    <flux:label>{{ __('Category') }}</flux:label>
-                    <flux:select wire:model="category_id">
-                        <flux:select.option value="">{{ __('None') }}</flux:select.option>
-                        @foreach ($categories as $category)
-                            <flux:select.option :value="$category->id">{{ $category->name }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
-                    <flux:error name="category_id" />
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>{{ __('Status') }}</flux:label>
-                    <flux:select wire:model="postStatus">
-                        @foreach ($statuses as $s)
-                            <flux:select.option :value="$s->value">{{ ucfirst($s->value) }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
-                    <flux:error name="postStatus" />
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>{{ __('Read Time') }}</flux:label>
-                    <flux:input wire:model="read_time" placeholder="5 min" />
-                    <flux:error name="read_time" />
-                </flux:field>
-            </div>
-
-            {{-- ── Publish date (only shown when status = published) ── --}}
-            <div x-show="{{ json_encode($postStatus) }} === 'published' || $wire.postStatus === 'published'" class="w-full sm:w-1/2">
-                <flux:field>
-                    <flux:label>{{ __('Publish Date') }}</flux:label>
-                    <flux:input wire:model="published_at" type="datetime-local" />
-                    <flux:error name="published_at" />
-                </flux:field>
-            </div>
-
-            {{-- ── Excerpt ─────────────────────────────────────────── --}}
-            <flux:field>
-                <flux:label>{{ __('Excerpt') }}</flux:label>
-                <flux:textarea wire:model="excerpt" rows="2" placeholder="{{ __('Short summary…') }}" />
-                <flux:error name="excerpt" />
-            </flux:field>
-
-            {{-- ── Content ─────────────────────────────────────────── --}}
-            <flux:field>
-                <flux:label>{{ __('Content') }}</flux:label>
-                <flux:textarea wire:model="content" rows="6" placeholder="{{ __('Full post content…') }}" />
-                <flux:error name="content" />
-            </flux:field>
-
-            {{-- ── Row: Image path + alt ───────────────────────────── --}}
-            <div class="grid sm:grid-cols-2 gap-4">
-                <flux:field>
-                    <flux:label>{{ __('Cover Image Path') }}</flux:label>
-                    <flux:input wire:model="image_path" placeholder="/images/post.jpg" />
-                    <flux:error name="image_path" />
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>{{ __('Image Alt Text') }}</flux:label>
-                    <flux:input wire:model="image_alt" />
-                    <flux:error name="image_alt" />
-                </flux:field>
-            </div>
-
-            {{-- ── Tags ────────────────────────────────────────────── --}}
-            <div>
-                <flux:label class="mb-2">{{ __('Tags') }}</flux:label>
-                <div class="flex flex-wrap gap-2">
-                    @foreach ($tags as $tag)
-                        <label class="flex items-center gap-1.5 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                wire:model="tag_ids"
-                                :value="{{ $tag->id }}"
-                                value="{{ $tag->id }}"
-                                class="rounded border-zinc-300 text-blue-600 shadow-sm focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-700"
-                            />
-                            <span class="text-sm text-zinc-700 dark:text-zinc-300">{{ $tag->name }}</span>
-                        </label>
-                    @endforeach
-                </div>
-                <flux:error name="tag_ids" />
-            </div>
-
-            {{-- ── Featured toggle ─────────────────────────────────── --}}
-            <div class="flex items-center gap-2">
-                <flux:checkbox wire:model="featured" id="featured-check" />
-                <label for="featured-check" class="text-sm text-zinc-700 dark:text-zinc-300 cursor-pointer">
-                    {{ __('Featured post') }}
-                </label>
-            </div>
-
-            {{-- ── Modal footer buttons ─────────────────────────────── --}}
-            <div class="flex justify-end gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-700">
-                <flux:button wire:click="save" variant="primary" wire:loading.attr="disabled">
-                    <span wire:loading.remove wire:target="save">{{ __('Save Post') }}</span>
-                    <span wire:loading wire:target="save">{{ __('Saving…') }}</span>
-                </flux:button>
-                <flux:button wire:click="closeModal" variant="ghost">{{ __('Cancel') }}</flux:button>
-            </div>
-        </div>
-    </flux:modal>
-
-    {{-- ─────────────────────────────────────────────────────────────────────
-         Filters: search + status dropdown
-    ─────────────────────────────────────────────────────────────────────── --}}
-    <div class="flex gap-3">
+    {{-- Filters --}}
+    <div class="flex flex-wrap gap-3">
         <flux:input
             wire:model.live.debounce.300ms="search"
             placeholder="{{ __('Search posts…') }}"
             icon="magnifying-glass"
             class="max-w-xs"
         />
-        <flux:select wire:model.live="status" class="max-w-40">
+        <flux:select wire:model.live="status" class="max-w-44">
             <flux:select.option value="">{{ __('All statuses') }}</flux:select.option>
             @foreach ($statuses as $s)
                 <flux:select.option :value="$s->value">{{ ucfirst($s->value) }}</flux:select.option>
@@ -169,69 +32,68 @@
         </flux:select>
     </div>
 
-    {{-- ─────────────────────────────────────────────────────────────────────
-         Posts Table
-    ─────────────────────────────────────────────────────────────────────── --}}
+    {{-- Posts table --}}
     <div class="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700">
         <table class="w-full text-sm">
-            <thead class="bg-zinc-50 text-left dark:bg-zinc-900">
+            <thead class="bg-zinc-50 dark:bg-zinc-800/60 text-left border-b border-zinc-200 dark:border-zinc-700">
                 <tr>
-                    <th class="px-4 py-3 font-medium text-zinc-500">{{ __('Title') }}</th>
-                    <th class="px-4 py-3 font-medium text-zinc-500">{{ __('Author') }}</th>
-                    <th class="px-4 py-3 font-medium text-zinc-500">{{ __('Category') }}</th>
-                    <th class="px-4 py-3 font-medium text-zinc-500">{{ __('Status') }}</th>
-                    <th class="px-4 py-3 font-medium text-zinc-500">{{ __('Published') }}</th>
-                    <th class="px-4 py-3"></th>
+                    <th class="px-4 py-3 font-semibold text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{{ __('Title') }}</th>
+                    <th class="px-4 py-3 font-semibold text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{{ __('Author') }}</th>
+                    <th class="px-4 py-3 font-semibold text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{{ __('Category') }}</th>
+                    <th class="px-4 py-3 font-semibold text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{{ __('Status') }}</th>
+                    <th class="px-4 py-3 font-semibold text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{{ __('Published') }}</th>
+                    <th class="px-4 py-3 w-px"></th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                 @forelse ($posts as $post)
-                    <tr>
-                        {{-- Title + featured badge --}}
-                        <td class="px-4 py-3 font-medium text-zinc-900 dark:text-white max-w-xs">
-                            {{ $post->title }}
-                            @if ($post->featured)
-                                <flux:badge color="yellow" size="sm" class="ml-1">★</flux:badge>
+                    <tr class="group hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors duration-100">
+
+                        {{-- Title + featured star --}}
+                        <td class="px-4 py-3.5 font-medium text-zinc-900 dark:text-white max-w-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="truncate">{{ $post->title }}</span>
+                                @if ($post->featured)
+                                    <flux:badge color="yellow" size="sm">★ Featured</flux:badge>
+                                @endif
+                            </div>
+                        </td>
+
+                        <td class="px-4 py-3.5 text-zinc-500 dark:text-zinc-400">
+                            {{ $post->author?->name ?? '—' }}
+                        </td>
+
+                        <td class="px-4 py-3.5 text-zinc-500 dark:text-zinc-400">
+                            {{ $post->category?->name ?? '—' }}
+                        </td>
+
+                        <td class="px-4 py-3.5">
+                            @if ($post->status->value === 'published')
+                                <flux:badge color="green" size="sm">Published</flux:badge>
+                            @else
+                                <flux:badge color="zinc" size="sm">{{ ucfirst($post->status->value) }}</flux:badge>
                             @endif
                         </td>
 
-                        <td class="px-4 py-3 text-zinc-500">{{ $post->author?->name ?? '—' }}</td>
-                        <td class="px-4 py-3 text-zinc-500">{{ $post->category?->name ?? '—' }}</td>
-
-                        {{-- Status badge --}}
-                        <td class="px-4 py-3">
-                            <flux:badge :color="$post->status->value === 'published' ? 'green' : 'zinc'" size="sm">
-                                {{ ucfirst($post->status->value) }}
-                            </flux:badge>
-                        </td>
-
-                        <td class="px-4 py-3 text-zinc-500 whitespace-nowrap">
+                        <td class="px-4 py-3.5 text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                             {{ $post->published_at?->format('M j, Y') ?? '—' }}
                         </td>
 
-                        {{-- ─────────────────────────────────────────────────
-                             Row actions — Edit opens the modal (no page nav).
-                             Edit: requires manage-all OR (update-own AND owned)
-                             Delete: requires manage-all OR (delete-own AND owned)
-                        ───────────────────────────────────────────────────── --}}
-                        <td class="px-4 py-3">
-                            <div class="flex justify-end gap-2">
+                        {{-- Row actions --}}
+                        <td class="px-4 py-3.5">
+                            <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 @if (auth()->user()->can('posts.manage-all') || (auth()->user()->can('posts.update-own') && $post->isOwnedBy(auth()->user())))
                                     <flux:button
-                                        wire:click="openEditModal({{ $post->id }})"
-                                        size="sm"
-                                        variant="ghost"
-                                        icon="pencil"
+                                        :href="route('manage.posts.edit', $post)"
+                                        wire:navigate
+                                        size="sm" variant="ghost" icon="pencil"
                                     />
                                 @endif
-
                                 @if (auth()->user()->can('posts.manage-all') || (auth()->user()->can('posts.delete-own') && $post->isOwnedBy(auth()->user())))
                                     <flux:button
                                         wire:click="delete({{ $post->id }})"
                                         wire:confirm="{{ __('Delete this post?') }}"
-                                        size="sm"
-                                        variant="ghost"
-                                        icon="trash"
+                                        size="sm" variant="ghost" icon="trash"
                                     />
                                 @endif
                             </div>
@@ -239,7 +101,14 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-4 py-10 text-center text-zinc-400">{{ __('No posts found.') }}</td>
+                        <td colspan="6" class="px-4 py-16 text-center">
+                            <div class="flex flex-col items-center gap-2 text-zinc-400 dark:text-zinc-500">
+                                <svg class="w-8 h-8 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                </svg>
+                                <p class="text-sm">{{ __('No posts found.') }}</p>
+                            </div>
+                        </td>
                     </tr>
                 @endforelse
             </tbody>
