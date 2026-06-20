@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class PostResource extends JsonResource
 {
@@ -28,6 +29,16 @@ class PostResource extends JsonResource
             }
         }
 
+        $fullImageUrl = $this->image_path
+            ? (filter_var($this->image_path, FILTER_VALIDATE_URL)
+                ? $this->image_path
+                : (str_starts_with($this->image_path, 'assets/')
+                    ? asset($this->image_path)
+                    : (str_starts_with($this->image_path, 'storage/')
+                        ? asset($this->image_path)
+                        : asset('storage/' . $this->image_path))))
+            : null;
+
         return [
             'id' => $this->id,
             'title' => $this->title,
@@ -42,10 +53,10 @@ class PostResource extends JsonResource
             'readTime' => $readTime,
             'excerpt' => $this->excerpt,
             'content' => $this->content,
-            'image' => $this->image_path,
-            'imageAlt' => $this->image_alt,
-            'imageGradient' => $this->image_gradient,
-            'imageIcon' => $this->image_icon,
+            'image_path' => $fullImageUrl,
+            'image_alt' => $this->image_alt,
+            'image_gradient' => $this->image_gradient,
+            'image_icon' => $this->image_icon,
             'tags' => $tags,
         ];
     }

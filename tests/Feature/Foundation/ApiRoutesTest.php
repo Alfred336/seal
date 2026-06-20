@@ -98,10 +98,10 @@ class ApiRoutesTest extends TestCase
                     'readTime',
                     'excerpt',
                     'content',
-                    'image',
-                    'imageAlt',
-                    'imageGradient',
-                    'imageIcon',
+                    'image_path',
+                    'image_alt',
+                    'image_gradient',
+                    'image_icon',
                     'tags',
                 ]
             ]
@@ -112,6 +112,9 @@ class ApiRoutesTest extends TestCase
         $this->assertEquals($user->name, $firstPost['author']);
         $this->assertEquals('8 min read', $firstPost['readTime']);
         $this->assertEquals(['Architecture'], $firstPost['tags']);
+        $this->assertEquals(asset('assets/images/blog/scalable-web-applications.webp'), $firstPost['image_path']);
+        $this->assertEquals('linear-gradient(135deg, #7F1D1D 0%, #DC2626 60%, #F97316 100%)', $firstPost['image_gradient']);
+        $this->assertEquals('<svg width="56" height="56" viewBox="0 0 56 56" fill="none"><path d="M20 24v-4a8 8 0 1 1 16 0v4" stroke="rgba(255,255,255,0.7)" stroke-width="2"/><rect x="16" y="24" width="24" height="18" rx="4" fill="rgba(255,255,255,0.22)"/></svg>', $firstPost['image_icon']);
     }
 
     public function test_unauthenticated_api_routes_return_401(): void

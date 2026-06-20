@@ -215,30 +215,38 @@
                     </div>
                     <div class="p-4 flex flex-col gap-4">
                         {{-- Preview area --}}
-                        <div
-                            x-data
-                            class="relative rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 overflow-hidden bg-zinc-50 dark:bg-zinc-800/40 min-h-[120px] flex items-center justify-center"
-                        >
-                            <template x-if="!$wire.image_path">
+                        <div class="relative rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 overflow-hidden bg-zinc-50 dark:bg-zinc-800/40 min-h-[120px] flex items-center justify-center">
+                            @if ($imageFile)
+                                <img src="{{ $imageFile->temporaryUrl() }}" class="w-full h-36 object-cover" />
+                            @elseif ($image_path)
+                                @php
+                                    $previewUrl = filter_var($image_path, FILTER_VALIDATE_URL)
+                                        ? $image_path
+                                        : (str_starts_with($image_path, 'assets/')
+                                            ? asset($image_path)
+                                            : (str_starts_with($image_path, 'storage/')
+                                                ? asset($image_path)
+                                                : asset('storage/' . $image_path)));
+                                @endphp
+                                <img src="{{ $previewUrl }}" alt="{{ $image_alt }}" class="w-full h-36 object-cover" onerror="this.style.display='none'" />
+                            @else
                                 <div class="text-center py-6 px-4">
                                     <svg class="mx-auto w-8 h-8 text-zinc-300 dark:text-zinc-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 21h18M3 3h18M9 9.75a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z"/>
                                     </svg>
                                     <p class="text-xs text-zinc-400 dark:text-zinc-500">{{ __('No image set') }}</p>
                                 </div>
-                            </template>
-                            <template x-if="$wire.image_path">
-                                <img
-                                    :src="$wire.image_path"
-                                    :alt="$wire.image_alt || ''"
-                                    class="w-full h-36 object-cover"
-                                    onerror="this.style.display='none'"
-                                />
-                            </template>
+                            @endif
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1.5">{{ __('Image Path') }}</label>
+                            <label class="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1.5">{{ __('Upload Image File') }}</label>
+                            <input type="file" wire:model="imageFile" class="block w-full text-xs text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
+                            <flux:error name="imageFile" class="mt-1 text-xs text-rose-500" />
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1.5">{{ __('Image Path (manual override)') }}</label>
                             <flux:input wire:model="image_path" placeholder="/images/cover.jpg" class="w-full text-sm font-mono rounded-lg border-zinc-200 dark:border-zinc-700 focus:ring-indigo-500" />
                             <flux:error name="image_path" class="mt-1 text-xs text-rose-500" />
                         </div>

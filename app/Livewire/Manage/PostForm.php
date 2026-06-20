@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Post;
 use App\Models\Tag;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -15,10 +16,13 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 #[Layout('layouts.app')]
 class PostForm extends Component
 {
+    use WithFileUploads;
+
     public ?Post $post = null;
 
     public string $title       = '';
@@ -33,6 +37,7 @@ class PostForm extends Component
     public ?string $image_path  = '';
     public ?string $image_alt   = '';
     public ?string $published_at = '';
+    public $imageFile = null;
 
     /** @var array<int> */
     public array $tag_ids = [];
@@ -54,7 +59,7 @@ class PostForm extends Component
                 'image_path', 'image_alt',
             ]));
             $this->status       = $post->status->value;
-            $this->published_at = $post->published_at?->format('Y-m-d\TH:i') ?? '';
+            $this->published_at = $post->published_at?->timezone('Africa/Dar_es_Salaam')->format('Y-m-d\TH:i') ?? '';
             $this->tag_ids      = $post->tags->pluck('id')->toArray();
         } else {
             $this->author_id = auth()->id();
@@ -88,9 +93,16 @@ class PostForm extends Component
             'image_path'   => $this->image_path ?: null,
             'image_alt'    => $this->image_alt ?: null,
             'published_at' => $this->status === 'published'
-                ? ($this->published_at ? Carbon::parse($this->published_at) : now())
+                ? ($this->published_at ? Carbon::parse($this->published_at, 'Africa/Dar_es_Salaam')->timezone('UTC') : now())
                 : null,
         ];
+
+        if ($this->imageFile) {
+            $path = $this->imageFile->store('posts', 'public');
+            $data['image_path'] = $path;
+            $this->image_path = $path;
+            $this->imageFile = null;
+        }
 
         if ($this->post?->exists) {
             // ── Update ────────────────────────────────────────────────
@@ -158,6 +170,7 @@ class PostForm extends Component
             'published_at' => ['nullable', 'date'],
             'tag_ids'      => ['array'],
             'tag_ids.*'    => ['exists:tags,id'],
+            'imageFile'    => ['nullable', 'image', 'max:10240'],
         ];
     }
 }
