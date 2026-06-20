@@ -14,14 +14,21 @@ class PostController extends ApiController
     {
         abort_unless($request->user()->can(Permission::PostsView->value), 403);
 
-        $posts = Post::query()
+        $perPage = $request->input('per_page');
+
+        $query = Post::query()
             ->published()
             ->with(['author', 'category', 'tags'])
             ->when($request->boolean('featured'), fn ($q) => $q->featured())
             ->when($request->input('category'), fn ($q, $slug) => $q->whereHas('category', fn ($c) => $c->where('slug', $slug)))
             ->when($request->input('tag'), fn ($q, $slug) => $q->whereHas('tags', fn ($t) => $t->where('slug', $slug)))
-            ->orderByDesc('published_at')
-            ->paginate(12);
+            ->orderByDesc('published_at');
+
+        if ($perPage === 'all' || $perPage === '-1') {
+            $posts = $query->get();
+        } else {
+            $posts = $query->paginate(is_numeric($perPage) && (int) $perPage > 0 ? (int) $perPage : 10);
+        }
 
         return PostResource::collection($posts);
     }

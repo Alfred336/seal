@@ -142,4 +142,52 @@ class ApiRoutesTest extends TestCase
             ->assertOk()
             ->assertSee('Users');
     }
+
+    public function test_api_posts_index_supports_custom_pagination_page_size(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        $user = User::query()->where('email', 'admin@sealtech.test')->firstOrFail();
+        $token = $user->createToken('test-token')->plainTextToken;
+
+        $category = \App\Models\Category::factory()->create();
+        \App\Models\Post::factory(12)->create([
+            'author_id' => $user->id,
+            'category_id' => $category->id,
+            'status' => \App\Enums\PostStatus::Published,
+            'published_at' => now()->subDays(1),
+        ]);
+
+        $response = $this->withToken($token)
+            ->getJson(route('api.posts.index', ['per_page' => 5]))
+            ->assertOk();
+
+        $response->assertJsonCount(5, 'data');
+        $this->assertEquals(5, $response->json('meta.per_page'));
+        $this->assertEquals(12, $response->json('meta.total'));
+    }
+
+    public function test_api_posts_index_supports_disabling_pagination(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        $user = User::query()->where('email', 'admin@sealtech.test')->firstOrFail();
+        $token = $user->createToken('test-token')->plainTextToken;
+
+        $category = \App\Models\Category::factory()->create();
+        \App\Models\Post::factory(12)->create([
+            'author_id' => $user->id,
+            'category_id' => $category->id,
+            'status' => \App\Enums\PostStatus::Published,
+            'published_at' => now()->subDays(1),
+        ]);
+
+        $response = $this->withToken($token)
+            ->getJson(route('api.posts.index', ['per_page' => 'all']))
+            ->assertOk();
+
+        $response->assertJsonCount(12, 'data');
+        $this->assertArrayNotHasKey('meta', $response->json());
+        $this->assertArrayNotHasKey('links', $response->json());
+    }
 }
