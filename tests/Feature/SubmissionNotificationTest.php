@@ -122,4 +122,28 @@ class SubmissionNotificationTest extends TestCase
             return $mail->hasTo($admin->email);
         });
     }
+
+    public function test_creating_user_by_admin_sends_invitation(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        $admin = User::where('email', 'admin@sealtech.test')->firstOrFail();
+
+        \Livewire\Livewire::actingAs($admin)
+            ->test(\App\Livewire\Manage\Users::class)
+            ->set('name', 'New Colleague')
+            ->set('email', 'colleague@example.com')
+            ->set('selectedRole', 'support')
+            ->call('create')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'colleague@example.com',
+            'name' => 'New Colleague',
+        ]);
+
+        Mail::assertQueued(\App\Mail\UserInvitation::class, function ($mail) {
+            return $mail->hasTo('colleague@example.com') && $mail->roleName === 'support';
+        });
+    }
 }

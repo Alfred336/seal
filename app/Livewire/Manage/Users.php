@@ -5,7 +5,11 @@ namespace App\Livewire\Manage;
 use App\Enums\Permission;
 use App\Enums\Role;
 use App\Models\User;
+use App\Mail\UserInvitation;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -52,17 +56,26 @@ class Users extends Component
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8'],
+            'password' => ['nullable', 'string', 'min:8'],
             'selectedRole' => ['required', 'in:'.implode(',', array_column(Role::cases(), 'value'))],
         ]);
+
+        $passwordValue = $this->password ?: Str::random(16);
 
         $user = User::create([
             'name' => $this->name,
             'email' => $this->email,
-            'password' => Hash::make($this->password),
+            'password' => Hash::make($passwordValue),
             'email_verified_at' => now(),
         ]);
         $user->syncRoles([$this->selectedRole]);
+
+        // Generate invitation / password reset token
+        $token = Password::broker()->createToken($user);
+        $invitationUrl = route('password.reset', ['token' => $token, 'email' => $user->email]);
+
+        // Send the invitation email
+        Mail::to($user->email)->send(new UserInvitation($user, $invitationUrl, $this->selectedRole));
 
         $this->resetForm();
         $this->showModal = false;
