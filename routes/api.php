@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ProjectRequestController;
 use App\Http\Controllers\Api\ServiceController;
+use App\Http\Controllers\Api\JobController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [AuthController::class, 'login'])->name('api.login');
@@ -19,6 +20,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('services', [ServiceController::class, 'index'])->name('api.services.index');
 
     Route::get('projects', [ProjectController::class, 'index'])->name('api.projects.index');
+
+    Route::get('jobs', [JobController::class, 'index'])->name('api.jobs.index');
+    Route::get('jobs/{slug}', [JobController::class, 'show'])->name('api.jobs.show');
 });
 
 Route::post('contact', [ContactController::class, 'store'])->name('api.contact.store');

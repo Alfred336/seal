@@ -93,6 +93,7 @@ class RolePermissionSeeder extends Seeder
             Permission::ServicesManage,   // @can('services.manage')   → services CRUD + reorder
             Permission::ProjectsView,     // @can('projects.view')     → sidebar Projects
             Permission::ProjectsManage,   // @can('projects.manage')   → projects CRUD + toggles
+            Permission::CareersManage,
         ],
 
         // ─────────────────────────────────────────────────────────────────

@@ -72,18 +72,20 @@
                      Content section: shown to users with "services.view".
                      The Projects sub-item requires "projects.view".
                 ───────────────────────────────────────────────────────────── --}}
-                @can('services.view')
+                @canany(['services.view', 'careers.manage'])
                     <flux:sidebar.group :heading="__('Content')" class="grid">
 
                         {{-- Services index --}}
-                        <flux:sidebar.item
-                            icon="briefcase"
-                            :href="route('manage.services.index')"
-                            :current="request()->routeIs('manage.services.*')"
-                            wire:navigate
-                        >
-                            {{ __('Services') }}
-                        </flux:sidebar.item>
+                        @can('services.view')
+                            <flux:sidebar.item
+                                icon="briefcase"
+                                :href="route('manage.services.index')"
+                                :current="request()->routeIs('manage.services.*')"
+                                wire:navigate
+                            >
+                                {{ __('Services') }}
+                            </flux:sidebar.item>
+                        @endcan
 
                         {{-- Projects: separate view permission --}}
                         @can('projects.view')
@@ -97,8 +99,20 @@
                             </flux:sidebar.item>
                         @endcan
 
+                        {{-- Careers: open positions management --}}
+                        @can('careers.manage')
+                            <flux:sidebar.item
+                                icon="identification"
+                                :href="route('manage.open-positions.index')"
+                                :current="request()->routeIs('manage.open-positions.*')"
+                                wire:navigate
+                            >
+                                {{ __('Careers') }}
+                            </flux:sidebar.item>
+                        @endcan
+
                     </flux:sidebar.group>
-                @endcan
+                @endcanany
 
                 {{-- ─────────────────────────────────────────────────────────
                      Inquiries section: shown when the user holds at least

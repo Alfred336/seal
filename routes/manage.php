@@ -7,6 +7,7 @@ use App\Livewire\Manage\PostForm;
 use App\Livewire\Manage\Posts;
 use App\Livewire\Manage\ProjectRequests;
 use App\Livewire\Manage\Projects;
+use App\Livewire\Manage\OpenPositions;
 use App\Livewire\Manage\Roles;
 use App\Livewire\Manage\Services;
 use App\Livewire\Manage\Subscriptions;
@@ -47,6 +48,10 @@ Route::middleware(['auth', 'verified'])
         Route::get('projects', Projects::class)
             ->middleware('permission:projects.view|projects.manage')
             ->name('projects.index');
+
+        Route::get('careers', OpenPositions::class)
+            ->middleware('permission:careers.manage')
+            ->name('open-positions.index');
 
         // Inquiries
         Route::get('contact-submissions', ContactSubmissions::class)
