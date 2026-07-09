@@ -124,6 +124,14 @@ class Users extends Component
         $user->update(['deactivated_at' => $user->isActive() ? now() : null]);
     }
 
+    public function delete(int $id): void
+    {
+        $user = User::findOrFail($id);
+        abort_unless(auth()->user()->can(Permission::UsersManage->value) && $user->id !== auth()->id(), 403);
+        $user->delete();
+        $this->dispatch('notify', message: __('User deleted successfully.'));
+    }
+
     public function closeModal(): void
     {
         $this->resetForm();

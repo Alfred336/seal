@@ -4,10 +4,13 @@ namespace App\Livewire\Manage;
 
 use App\Enums\Permission;
 use App\Enums\PostStatus;
+use App\Mail\NewPostPublished;
 use App\Models\Category;
 use App\Models\Post;
+use App\Models\Subscription;
 use App\Models\Tag;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -105,6 +108,8 @@ class PostForm extends Component
         }
 
         if ($this->post?->exists) {
+            $isNewlyPublished = ($this->post->status !== PostStatus::Published && $this->status === 'published');
+
             // ── Update ────────────────────────────────────────────────
             abort_unless(
                 $user->can(Permission::PostsManageAll->value)
@@ -114,6 +119,10 @@ class PostForm extends Component
 
             $this->post->update($data);
             $this->post->tags()->sync($this->tag_ids);
+
+            if ($isNewlyPublished) {
+                $this->notifySubscribers($this->post);
+            }
 
             $this->dispatch('notify', message: __('Post saved successfully.'));
         } else {
@@ -128,11 +137,23 @@ class PostForm extends Component
             $post = Post::create($data);
             $post->tags()->sync($this->tag_ids);
 
+            if ($this->status === 'published') {
+                $this->notifySubscribers($post);
+            }
+
             session()->flash('notify', __('Post created successfully.'));
 
             // After creating, go straight to the edit page so the user
             // can continue editing with the post now persisted.
             $this->redirect(route('manage.posts.edit', $post), navigate: true);
+        }
+    }
+
+    protected function notifySubscribers(Post $post): void
+    {
+        $subscribers = Subscription::active()->get();
+        foreach ($subscribers as $subscriber) {
+            Mail::to($subscriber->email)->send(new NewPostPublished($post));
         }
     }
 

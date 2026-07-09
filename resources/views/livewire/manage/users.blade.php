@@ -135,6 +135,13 @@
                                         size="sm" variant="ghost"
                                         :icon="$user->isActive() ? 'lock-closed' : 'lock-open'"
                                     />
+                                    @if ($user->id !== auth()->id())
+                                        <flux:button
+                                            wire:click="delete({{ $user->id }})"
+                                            wire:confirm="{{ __('Are you sure you want to permanently delete this user?') }}"
+                                            size="sm" variant="ghost" icon="trash"
+                                        />
+                                    @endif
                                 @endcan
                             </div>
                         </td>
