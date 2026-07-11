@@ -138,7 +138,7 @@
             <p>We are excited to share our latest insights and digital engineering updates. Click the button below to read the full article on our platform:</p>
 
             <div class="action-area">
-                <a href="{{ config('app.url') }}/blog/{{ $post->slug }}" class="action-button">Read Full Post</a>
+                <a href="https://sealtech.co.tz/{{ $post->slug }}" class="action-button">Read Full Post</a>
             </div>
         </div>
         <div class="footer">
