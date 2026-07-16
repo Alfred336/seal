@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" {{ $attributes }}>
-    <path 
-        fill="currentColor" 
-        d="M256 96 C300 96, 360 120, 360 180 C360 210, 340 230, 310 245 L202 299 C180 310, 160 330, 160 360 C160 410, 210 416, 256 416 C300 416, 352 390, 352 360 C352 350, 340 350, 330 350 C310 350, 310 376, 256 376 C210 376, 200 360, 200 340 C200 320, 220 305, 250 290 L358 236 C380 225, 400 205, 400 170 C400 110, 330 96, 256 96 Z"
-    />
-</svg>
+<!-- sealtech CMS Logo -->
+<img
+    src="{{ asset('images/seallogo.png') }}"
+    alt="SealCMS"
+    {{ $attributes->merge(['class' => 'h-8 w-8 rounded']) }}
+>

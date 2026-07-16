@@ -33,12 +33,29 @@
                         <flux:input wire:model="editTitle" />
                         <flux:error name="editTitle" />
                     </flux:field>
-                    <flux:field>
-                        <flux:label>{{ __('Icon') }}</flux:label>
-                        <flux:input wire:model="editIcon" placeholder="code-bracket" />
-                        <flux:error name="editIcon" />
-                    </flux:field>
-                </div>
+                <flux:field>
+                    <flux:label>{{ __('Icon') }}</flux:label>
+                    <flux:input wire:model="editIcon" placeholder="code-bracket" />
+                    <flux:error name="editIcon" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>{{ __('Blog Category') }}</flux:label>
+
+                    <select wire:model="editCategoryId"
+                        class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 px-3 py-2">
+                        <option value="">Select Category</option>
+
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}">
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <flux:error name="editCategoryId" />
+                </flux:field>
+
                 <flux:field>
                     <flux:label>{{ __('Description') }}</flux:label>
                     <flux:textarea wire:model="editDescription" rows="3" />
@@ -61,6 +78,22 @@
                         <flux:label>{{ __('Icon') }}</flux:label>
                         <flux:input wire:model="newIcon" placeholder="code-bracket" />
                         <flux:error name="newIcon" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>{{ __('Blog Category') }}</flux:label>
+
+                        <select wire:model="newCategoryId"
+                            class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 px-3 py-2">
+                            <option value="">Select Category</option>
+
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}">
+                                    {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        <flux:error name="newCategoryId" />
                     </flux:field>
                 </div>
                 <flux:field>

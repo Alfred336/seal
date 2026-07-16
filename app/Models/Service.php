@@ -19,6 +19,7 @@ class Service extends Model
         'title',
         'description',
         'icon',
+        'category_id',
         'sort_order',
         'active',
     ];
@@ -50,5 +51,10 @@ class Service extends Model
     public function scopeOrdered(Builder $query): Builder
     {
         return $query->orderBy('sort_order')->orderBy('title');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 }

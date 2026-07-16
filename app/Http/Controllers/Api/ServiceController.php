@@ -14,7 +14,7 @@ class ServiceController extends ApiController
     {
         abort_unless($request->user()->can(Permission::ServicesView->value), 403);
 
-        $services = Service::query()->active()->ordered()->get();
+        $services = Service::query()->with('category')->active()->ordered()->get();
 
         return ServiceResource::collection($services);
     }

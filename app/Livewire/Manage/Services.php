@@ -3,6 +3,7 @@
 namespace App\Livewire\Manage;
 
 use App\Enums\Permission;
+use App\Models\Category;
 use App\Models\Service;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -24,11 +25,15 @@ class Services extends Component
 
     public string $editIcon = '';
 
+    public ?int $editCategoryId = null;
+
     public string $newTitle = '';
 
     public string $newDescription = '';
 
     public string $newIcon = '';
+
+    public ?int $newCategoryId = null;
 
     /**
      * Open the modal in create mode.
@@ -57,6 +62,7 @@ class Services extends Component
             'title'       => $this->newTitle,
             'description' => $this->newDescription ?: null,
             'icon'        => $this->newIcon ?: null,
+            'category_id' => $this->newCategoryId,
             'sort_order'  => $maxOrder + 1,
         ]);
 
@@ -72,6 +78,7 @@ class Services extends Component
         $this->editTitle      = $service->title;
         $this->editDescription = $service->description ?? '';
         $this->editIcon       = $service->icon ?? '';
+        $this->editCategoryId = $service->category_id;
         $this->showModal      = true;
     }
 
@@ -88,6 +95,7 @@ class Services extends Component
             'title'       => $this->editTitle,
             'description' => $this->editDescription ?: null,
             'icon'        => $this->editIcon ?: null,
+            'category_id' => $this->editCategoryId,
         ]);
         $this->editingId = null;
         $this->showModal = false;
@@ -130,6 +138,7 @@ class Services extends Component
     {
         return view('livewire.manage.services', [
             'services' => Service::ordered()->get(),
+            'categories' => Category::orderBy('name')->get(),
         ]);
     }
 
