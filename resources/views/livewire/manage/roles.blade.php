@@ -166,7 +166,7 @@
                                         <flux:button wire:click="startEdit({{ $role->id }})" size="sm" variant="ghost" icon="pencil" />
                                         <flux:button
                                             wire:click="delete({{ $role->id }})"
-                                            wire:confirm="{{ __('Delete role \":name\"? Users will lose its permissions.', ['name' => $role->name]) }}"
+                                            wire:confirm="{{ __('Delete role \':name\'? Users will lose its permissions.', ['name' => $role->name]) }}"
                                             size="sm" variant="ghost" icon="trash"
                                         />
                                     @else
