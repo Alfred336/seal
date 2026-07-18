@@ -13,6 +13,7 @@ use App\Livewire\Manage\Services;
 use App\Livewire\Manage\Subscriptions;
 use App\Livewire\Manage\Tags;
 use App\Livewire\Manage\Users;
+use App\Livewire\Manage\Backups;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])
@@ -80,4 +81,9 @@ Route::middleware(['auth', 'verified'])
         Route::get('roles', Roles::class)
             ->middleware('permission:roles.manage')
             ->name('roles.index');
+
+        // Backups management — admin-only; requires "backups.manage" permission
+        Route::get('backups', Backups::class)
+            ->middleware('permission:backups.manage')
+            ->name('backups.index');
     });

@@ -28,6 +28,7 @@ enum Permission: string
     case UsersManage = 'users.manage';
     case RolesManage = 'roles.manage';
     case CareersManage = 'careers.manage';
+    case BackupsManage = 'backups.manage';
 
     /**
      * @return list<string>

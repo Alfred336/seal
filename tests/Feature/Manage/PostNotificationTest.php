@@ -52,7 +52,7 @@ class PostNotificationTest extends TestCase
             ->assertHasNoErrors();
 
         Mail::assertQueued(NewPostPublished::class, function (NewPostPublished $mail) use ($activeSub) {
-            $mail->assertSeeInHtml('https://sealtech.co.tz/my-published-post');
+            $mail->assertSeeInHtml(config('app.url') . '/blog/my-published-post');
             return $mail->hasTo('active@example.com');
         });
 
@@ -107,7 +107,7 @@ class PostNotificationTest extends TestCase
 
         Mail::assertQueued(NewPostPublished::class, 1);
         Mail::assertQueued(NewPostPublished::class, function (NewPostPublished $mail) {
-            $mail->assertSeeInHtml('https://sealtech.co.tz/draft-post');
+            $mail->assertSeeInHtml(config('app.url') . '/blog/draft-post');
             return $mail->hasTo('active@example.com');
         });
     }

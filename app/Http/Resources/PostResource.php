@@ -62,6 +62,7 @@ class PostResource extends JsonResource
             'image_gradient' => $this->image_gradient,
             'image_icon' => $this->image_icon,
             'tags' => $tags,
+            'categoryColor' => $this->category?->color,
         ];
     }
 }

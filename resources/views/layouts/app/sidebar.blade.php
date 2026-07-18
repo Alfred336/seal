@@ -183,7 +183,7 @@
                      OR "roles.manage" so each permission can independently
                      reveal this group without requiring both.
                 ───────────────────────────────────────────────────────────── --}}
-                @canany(['users.view', 'roles.manage'])
+                @canany(['users.view', 'roles.manage', 'backups.manage'])
                     <flux:sidebar.group :heading="__('Administration')" class="grid">
 
                         {{-- Users management: requires users.view --}}
@@ -207,6 +207,18 @@
                                 wire:navigate
                             >
                                 {{ __('Roles & Permissions') }}
+                            </flux:sidebar.item>
+                        @endcan
+
+                        {{-- Backups management: requires backups.manage --}}
+                        @can('backups.manage')
+                            <flux:sidebar.item
+                                icon="circle-stack"
+                                :href="route('manage.backups.index')"
+                                :current="request()->routeIs('manage.backups.*')"
+                                wire:navigate
+                            >
+                                {{ __('Backups') }}
                             </flux:sidebar.item>
                         @endcan
 
