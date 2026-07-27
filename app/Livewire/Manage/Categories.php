@@ -50,8 +50,8 @@ class Categories extends Component
     {
         abort_unless(auth()->user()->can(Permission::CategoriesManage->value), 403);
         $this->validate([
-            'newName'  => ['required', 'string', 'max:50', 'unique:categories,name'],
-            'newSlug'  => ['required', 'string', 'max:100', 'unique:categories,slug'],
+            'newName' => ['required', 'string', 'max:50', 'unique:categories,name'],
+            'newSlug' => ['required', 'string', 'max:100', 'unique:categories,slug'],
             'newColor' => ['nullable', 'string', 'max:7'],
         ]);
         Category::create(['name' => $this->newName, 'slug' => $this->newSlug, 'color' => $this->newColor ?: null]);
@@ -68,11 +68,11 @@ class Categories extends Component
     {
         $category = Category::findOrFail($id);
         $this->resetValidation();
-        $this->editingId  = $id;
-        $this->editName   = $category->name;
-        $this->editSlug   = $category->slug ?? '';
-        $this->editColor  = $category->color ?? '';
-        $this->showModal  = true;
+        $this->editingId = $id;
+        $this->editName = $category->name;
+        $this->editSlug = $category->slug ?? '';
+        $this->editColor = $category->color ?? '';
+        $this->showModal = true;
     }
 
     public function saveEdit(): void
@@ -80,8 +80,8 @@ class Categories extends Component
         abort_unless(auth()->user()->can(Permission::CategoriesManage->value), 403);
         $category = Category::findOrFail($this->editingId);
         $this->validate([
-            'editName'  => ['required', 'string', 'max:50', "unique:categories,name,{$this->editingId}"],
-            'editSlug'  => ['required', 'string', 'max:100', "unique:categories,slug,{$this->editingId}"],
+            'editName' => ['required', 'string', 'max:50', "unique:categories,name,{$this->editingId}"],
+            'editSlug' => ['required', 'string', 'max:100', "unique:categories,slug,{$this->editingId}"],
             'editColor' => ['nullable', 'string', 'max:7'],
         ]);
         $category->update(['name' => $this->editName, 'slug' => $this->editSlug, 'color' => $this->editColor ?: null]);
@@ -92,8 +92,8 @@ class Categories extends Component
     /** Close modal without saving. */
     public function closeModal(): void
     {
-        $this->showModal  = false;
-        $this->editingId  = null;
+        $this->showModal = false;
+        $this->editingId = null;
         $this->resetValidation();
     }
 

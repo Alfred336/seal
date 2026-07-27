@@ -54,8 +54,8 @@ class Projects extends Component
     public function openCreateModal(): void
     {
         $this->resetForm();
-        $this->editingId  = null;
-        $this->showModal  = true;
+        $this->editingId = null;
+        $this->showModal = true;
     }
 
     public function create(): void
@@ -121,8 +121,8 @@ class Projects extends Component
     public function closeModal(): void
     {
         $this->resetForm();
-        $this->editingId  = null;
-        $this->showModal  = false;
+        $this->editingId = null;
+        $this->showModal = false;
     }
 
     public function render(): View

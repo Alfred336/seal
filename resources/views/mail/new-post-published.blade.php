@@ -144,7 +144,7 @@
         <div class="footer">
             <p>&copy; {{ date('Y') }} SealTech. All rights reserved.</p>
             <p>You received this email because you subscribed to the SealTech newsletter.</p>
-            <p><a href="{{ config('app.url') }}/unsubscribe" class="unsubscribe-link">Unsubscribe from this list</a></p>
+            <p><a href="{{ $unsubscribeUrl }}" class="unsubscribe-link">Unsubscribe from this list</a></p>
         </div>
     </div>
 </body>

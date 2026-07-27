@@ -3,7 +3,6 @@
 namespace App\Livewire\Manage;
 
 use App\Enums\Permission;
-use App\Enums\PostStatus;
 use App\Models\OpenPosition;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -27,11 +26,17 @@ class OpenPositions extends Component
 
     // Form fields
     public string $title = '';
+
     public string $slug = '';
+
     public string $type = 'Full-time';
+
     public string $location = 'Dar es Salaam';
+
     public string $tech_stack = '';
+
     public string $description = '';
+
     public string $status = 'draft';
 
     public function updatingSearch(): void
@@ -69,7 +74,7 @@ class OpenPositions extends Component
 
     public function updatedTitle(string $value): void
     {
-        if (!$this->editingId) {
+        if (! $this->editingId) {
             $this->slug = Str::slug($value);
         }
     }
@@ -144,7 +149,7 @@ class OpenPositions extends Component
     {
         return [
             'title' => ['required', 'string', 'max:200'],
-            'slug' => ['required', 'string', 'max:250', 'unique:open_positions,slug,' . ($this->editingId ?? 'NULL')],
+            'slug' => ['required', 'string', 'max:250', 'unique:open_positions,slug,'.($this->editingId ?? 'NULL')],
             'type' => ['required', 'string', 'max:50'],
             'location' => ['required', 'string', 'max:150'],
             'tech_stack' => ['nullable', 'string', 'max:200'],

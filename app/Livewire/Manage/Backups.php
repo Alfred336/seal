@@ -42,10 +42,10 @@ class Backups extends Component
         } catch (\Exception $e) {
             Log::error('Manual backup failed', [
                 'user_id' => auth()->id(),
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
-            $this->dispatch('notify', message: __('Backup failed: ') . $e->getMessage());
+            $this->dispatch('notify', message: __('Backup failed: ').$e->getMessage());
         }
     }
 
@@ -61,6 +61,7 @@ class Backups extends Component
 
         if (! $disk->exists($path)) {
             $this->dispatch('notify', message: __('Backup file does not exist.'));
+
             return null;
         }
 
@@ -81,7 +82,7 @@ class Backups extends Component
             $disk->delete($path);
             Log::info('Backup file deleted manually', [
                 'user_id' => auth()->id(),
-                'path'    => $path,
+                'path' => $path,
             ]);
             $this->dispatch('notify', message: __('Backup deleted successfully.'));
         } else {
@@ -105,16 +106,16 @@ class Backups extends Component
             foreach ($files as $file) {
                 if (str_ends_with($file, '.zip')) {
                     $backupFiles[] = [
-                        'path'          => $file,
-                        'name'          => basename($file),
-                        'size'          => $disk->size($file),
+                        'path' => $file,
+                        'name' => basename($file),
+                        'size' => $disk->size($file),
                         'last_modified' => $disk->lastModified($file),
                     ];
                 }
             }
 
             // Sort by last modified date (newest first)
-            usort($backupFiles, fn($a, $b) => $b['last_modified'] <=> $a['last_modified']);
+            usort($backupFiles, fn ($a, $b) => $b['last_modified'] <=> $a['last_modified']);
         }
 
         return view('livewire.manage.backups', compact('backupFiles'));

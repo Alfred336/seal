@@ -2,6 +2,10 @@
 
 namespace Tests\Feature\Foundation;
 
+use App\Enums\PostStatus;
+use App\Models\Category;
+use App\Models\Post;
+use App\Models\Tag;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -66,12 +70,12 @@ class ApiRoutesTest extends TestCase
         $user = User::query()->where('email', 'admin@sealtech.test')->firstOrFail();
         $token = $user->createToken('test-token')->plainTextToken;
 
-        $category = \App\Models\Category::factory()->create(['name' => 'Engineering']);
-        $tag = \App\Models\Tag::factory()->create(['name' => 'Architecture']);
-        $post = \App\Models\Post::factory()->create([
+        $category = Category::factory()->create(['name' => 'Engineering']);
+        $tag = Tag::factory()->create(['name' => 'Architecture']);
+        $post = Post::factory()->create([
             'author_id' => $user->id,
             'category_id' => $category->id,
-            'status' => \App\Enums\PostStatus::Published,
+            'status' => PostStatus::Published,
             'published_at' => now(),
             'read_time' => '8 min',
             'image_path' => 'assets/images/blog/scalable-web-applications.webp',
@@ -103,8 +107,8 @@ class ApiRoutesTest extends TestCase
                     'image_gradient',
                     'image_icon',
                     'tags',
-                ]
-            ]
+                ],
+            ],
         ]);
 
         $firstPost = $response->json('data.0');
@@ -153,11 +157,11 @@ class ApiRoutesTest extends TestCase
         $user = User::query()->where('email', 'admin@sealtech.test')->firstOrFail();
         $token = $user->createToken('test-token')->plainTextToken;
 
-        $category = \App\Models\Category::factory()->create();
-        \App\Models\Post::factory(12)->create([
+        $category = Category::factory()->create();
+        Post::factory(12)->create([
             'author_id' => $user->id,
             'category_id' => $category->id,
-            'status' => \App\Enums\PostStatus::Published,
+            'status' => PostStatus::Published,
             'published_at' => now()->subDays(1),
         ]);
 
@@ -177,11 +181,11 @@ class ApiRoutesTest extends TestCase
         $user = User::query()->where('email', 'admin@sealtech.test')->firstOrFail();
         $token = $user->createToken('test-token')->plainTextToken;
 
-        $category = \App\Models\Category::factory()->create();
-        \App\Models\Post::factory(12)->create([
+        $category = Category::factory()->create();
+        Post::factory(12)->create([
             'author_id' => $user->id,
             'category_id' => $category->id,
-            'status' => \App\Enums\PostStatus::Published,
+            'status' => PostStatus::Published,
             'published_at' => now()->subDays(1),
         ]);
 

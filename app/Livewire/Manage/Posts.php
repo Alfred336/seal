@@ -65,7 +65,7 @@ class Posts extends Component
             ->paginate(15);
 
         return view('livewire.manage.posts', [
-            'posts'    => $posts,
+            'posts' => $posts,
             'statuses' => PostStatus::cases(),
         ]);
     }

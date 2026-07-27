@@ -7,7 +7,6 @@ use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
-use Spatie\Permission\Models\Permission as PermissionModel;
 use Spatie\Permission\Models\Role as RoleModel;
 
 /**
@@ -135,8 +134,8 @@ class Roles extends Component
         abort_unless(auth()->user()->can(Permission::RolesManage->value), 403);
 
         $this->validate([
-            'roleName'              => ['required', 'string', 'max:64', 'unique:roles,name'],
-            'selectedPermissions'   => ['array'],
+            'roleName' => ['required', 'string', 'max:64', 'unique:roles,name'],
+            'selectedPermissions' => ['array'],
             'selectedPermissions.*' => ['string', 'exists:permissions,name'],
         ]);
 
@@ -152,7 +151,7 @@ class Roles extends Component
     /**
      * Load an existing role into the form for editing.
      *
-     * @param int $id The Spatie role ID.
+     * @param  int  $id  The Spatie role ID.
      */
     public function startEdit(int $id): void
     {
@@ -160,10 +159,10 @@ class Roles extends Component
 
         $role = RoleModel::with('permissions')->findOrFail($id);
 
-        $this->editingId            = $id;
-        $this->roleName             = $role->name;
-        $this->selectedPermissions  = $role->permissions->pluck('name')->all();
-        $this->showModal            = true;
+        $this->editingId = $id;
+        $this->roleName = $role->name;
+        $this->selectedPermissions = $role->permissions->pluck('name')->all();
+        $this->showModal = true;
     }
 
     /**
@@ -186,8 +185,8 @@ class Roles extends Component
         );
 
         $this->validate([
-            'roleName'              => ['required', 'string', 'max:64', "unique:roles,name,{$this->editingId}"],
-            'selectedPermissions'   => ['array'],
+            'roleName' => ['required', 'string', 'max:64', "unique:roles,name,{$this->editingId}"],
+            'selectedPermissions' => ['array'],
             'selectedPermissions.*' => ['string', 'exists:permissions,name'],
         ]);
 
@@ -195,8 +194,8 @@ class Roles extends Component
         $role->syncPermissions($this->selectedPermissions);
 
         $this->resetForm();
-        $this->showModal  = false;
-        $this->editingId  = null;
+        $this->showModal = false;
+        $this->editingId = null;
 
         $this->dispatch('notify', message: __('Role updated successfully.'));
     }
@@ -207,7 +206,7 @@ class Roles extends Component
      * Requires: roles.manage
      * Guard: cannot delete the "admin" system role.
      *
-     * @param int $id The Spatie role ID.
+     * @param  int  $id  The Spatie role ID.
      */
     public function delete(int $id): void
     {
@@ -234,8 +233,8 @@ class Roles extends Component
     public function closeModal(): void
     {
         $this->resetForm();
-        $this->showModal  = false;
-        $this->editingId  = null;
+        $this->showModal = false;
+        $this->editingId = null;
     }
 
     // ── Render ─────────────────────────────────────────────────────────
@@ -250,7 +249,7 @@ class Roles extends Component
         $roles = RoleModel::withCount('permissions')->orderBy('name')->get();
 
         return view('livewire.manage.roles', [
-            'roles'            => $roles,
+            'roles' => $roles,
             'permissionGroups' => $this->permissionGroups(),
         ]);
     }

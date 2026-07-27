@@ -64,8 +64,8 @@ class Tags extends Component
         $tag = Tag::findOrFail($id);
         $this->resetValidation();
         $this->editingId = $id;
-        $this->editName  = $tag->name;
-        $this->editSlug  = $tag->slug ?? '';
+        $this->editName = $tag->name;
+        $this->editSlug = $tag->slug ?? '';
         $this->showModal = true;
     }
 
@@ -85,8 +85,8 @@ class Tags extends Component
     /** Close modal without saving. */
     public function closeModal(): void
     {
-        $this->showModal  = false;
-        $this->editingId  = null;
+        $this->showModal = false;
+        $this->editingId = null;
         $this->resetValidation();
     }
 

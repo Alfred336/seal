@@ -2,16 +2,19 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\Manage\Users;
 use App\Mail\CallRequestConfirmation;
 use App\Mail\ContactSubmissionConfirmation;
 use App\Mail\NewCallRequest;
 use App\Mail\NewContactSubmission;
 use App\Mail\NewProjectRequest;
 use App\Mail\ProjectRequestConfirmation;
+use App\Mail\UserInvitation;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class SubmissionNotificationTest extends TestCase
@@ -47,7 +50,7 @@ class SubmissionNotificationTest extends TestCase
         ]);
 
         // Assert visitor confirmation email was sent
-        Mail::assertQueued(ContactSubmissionConfirmation::class, function ($mail) use ($postData) {
+        Mail::assertQueued(ContactSubmissionConfirmation::class, function ($mail) {
             return $mail->hasTo('johndoe@example.com') && $mail->submission->name === 'John Doe';
         });
 
@@ -80,7 +83,7 @@ class SubmissionNotificationTest extends TestCase
         ]);
 
         // Assert visitor confirmation email was sent
-        Mail::assertQueued(CallRequestConfirmation::class, function ($mail) use ($postData) {
+        Mail::assertQueued(CallRequestConfirmation::class, function ($mail) {
             return $mail->hasTo('janesmith@example.com') && $mail->requestModel->full_name === 'Jane Smith';
         });
 
@@ -112,7 +115,7 @@ class SubmissionNotificationTest extends TestCase
         ]);
 
         // Assert visitor confirmation email was sent
-        Mail::assertQueued(ProjectRequestConfirmation::class, function ($mail) use ($postData) {
+        Mail::assertQueued(ProjectRequestConfirmation::class, function ($mail) {
             return $mail->hasTo('alice@example.com') && $mail->requestModel->full_name === 'Alice Wonderland';
         });
 
@@ -129,8 +132,8 @@ class SubmissionNotificationTest extends TestCase
 
         $admin = User::where('email', 'admin@sealtech.test')->firstOrFail();
 
-        \Livewire\Livewire::actingAs($admin)
-            ->test(\App\Livewire\Manage\Users::class)
+        Livewire::actingAs($admin)
+            ->test(Users::class)
             ->set('name', 'New Colleague')
             ->set('email', 'colleague@example.com')
             ->set('selectedRole', 'support')
@@ -142,7 +145,7 @@ class SubmissionNotificationTest extends TestCase
             'name' => 'New Colleague',
         ]);
 
-        Mail::assertQueued(\App\Mail\UserInvitation::class, function ($mail) {
+        Mail::assertQueued(UserInvitation::class, function ($mail) {
             return $mail->hasTo('colleague@example.com') && $mail->roleName === 'support';
         });
     }

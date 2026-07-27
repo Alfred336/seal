@@ -51,12 +51,13 @@ class PostNotificationTest extends TestCase
             ->call('save')
             ->assertHasNoErrors();
 
-        Mail::assertQueued(NewPostPublished::class, function (NewPostPublished $mail) use ($activeSub) {
-            $mail->assertSeeInHtml(config('app.url') . '/blog/my-published-post');
+        Mail::assertQueued(NewPostPublished::class, function (NewPostPublished $mail) {
+            $mail->assertSeeInHtml(config('app.url').'/blog/my-published-post');
+
             return $mail->hasTo('active@example.com');
         });
 
-        Mail::assertNotQueued(NewPostPublished::class, function ($mail) use ($inactiveSub) {
+        Mail::assertNotQueued(NewPostPublished::class, function ($mail) {
             return $mail->hasTo('inactive@example.com');
         });
     }
@@ -107,8 +108,33 @@ class PostNotificationTest extends TestCase
 
         Mail::assertQueued(NewPostPublished::class, 1);
         Mail::assertQueued(NewPostPublished::class, function (NewPostPublished $mail) {
-            $mail->assertSeeInHtml(config('app.url') . '/blog/draft-post');
+            $mail->assertSeeInHtml(config('app.url').'/blog/draft-post');
+
             return $mail->hasTo('active@example.com');
+        });
+    }
+
+    public function test_publishing_a_post_model_update_sends_newsletter_email(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $post = Post::factory()->create([
+            'author_id' => $user->id,
+            'title' => 'Model Published Post',
+            'slug' => 'model-published-post',
+            'status' => PostStatus::Draft,
+        ]);
+
+        Subscription::factory()->create([
+            'email' => 'model@example.com',
+            'status' => SubscriptionStatus::Active,
+        ]);
+
+        $post->update(['status' => PostStatus::Published]);
+
+        Mail::assertQueued(NewPostPublished::class, function (NewPostPublished $mail) use ($post): bool {
+            return $mail->hasTo('model@example.com') && $mail->post->is($post);
         });
     }
 

@@ -1,12 +1,7 @@
 <?php
 
+use App\Notifications\BackupNotifiable;
 use Spatie\Backup\Notifications\Notifiable;
-use Spatie\Backup\Notifications\Notifications\BackupHasFailedNotification;
-use Spatie\Backup\Notifications\Notifications\BackupWasSuccessfulNotification;
-use Spatie\Backup\Notifications\Notifications\CleanupHasFailedNotification;
-use Spatie\Backup\Notifications\Notifications\CleanupWasSuccessfulNotification;
-use Spatie\Backup\Notifications\Notifications\HealthyBackupWasFoundNotification;
-use Spatie\Backup\Notifications\Notifications\UnhealthyBackupWasFoundNotification;
 use Spatie\Backup\Tasks\Cleanup\Strategies\DefaultStrategy;
 use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays;
 use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes;
@@ -221,19 +216,19 @@ return [
      */
     'notifications' => [
         'notifications' => [
-            \App\Notifications\Backup\BackupHasFailedNotification::class => ['mail'],
-            \App\Notifications\Backup\UnhealthyBackupWasFoundNotification::class => ['mail'],
-            \App\Notifications\Backup\CleanupHasFailedNotification::class => ['mail'],
-            \App\Notifications\Backup\BackupWasSuccessfulNotification::class => ['mail'],
-            \App\Notifications\Backup\HealthyBackupWasFoundNotification::class => ['mail'],
-            \App\Notifications\Backup\CleanupWasSuccessfulNotification::class => ['mail'],
+            App\Notifications\Backup\BackupHasFailedNotification::class => ['mail'],
+            App\Notifications\Backup\UnhealthyBackupWasFoundNotification::class => ['mail'],
+            App\Notifications\Backup\CleanupHasFailedNotification::class => ['mail'],
+            App\Notifications\Backup\BackupWasSuccessfulNotification::class => ['mail'],
+            App\Notifications\Backup\HealthyBackupWasFoundNotification::class => ['mail'],
+            App\Notifications\Backup\CleanupWasSuccessfulNotification::class => ['mail'],
         ],
 
         /*
          * Here you can specify the notifiable to which the notifications should be sent. The default
          * notifiable will use the variables specified in this config file.
          */
-        'notifiable' => \App\Notifications\BackupNotifiable::class,
+        'notifiable' => BackupNotifiable::class,
 
         'mail' => [
             'to' => env('MAIL_FROM_ADDRESS', 'admin@sealtech.co.tz'),

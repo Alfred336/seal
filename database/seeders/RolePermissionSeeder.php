@@ -159,6 +159,7 @@ class RolePermissionSeeder extends Seeder
             // Admin gets every permission in the system.
             if ($role === Role::Admin) {
                 $roleModel->syncPermissions(PermissionModel::all());
+
                 continue;
             }
 
@@ -175,8 +176,8 @@ class RolePermissionSeeder extends Seeder
         $admin = User::query()->firstOrCreate(
             ['email' => 'admin@sealtech.test'],
             [
-                'name'              => 'SealTech Admin',
-                'password'          => bcrypt('password'),
+                'name' => 'SealTech Admin',
+                'password' => bcrypt('password'),
                 'email_verified_at' => now(),
             ],
         );

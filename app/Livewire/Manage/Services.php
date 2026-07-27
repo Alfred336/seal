@@ -52,18 +52,18 @@ class Services extends Component
     {
         abort_unless(auth()->user()->can(Permission::ServicesManage->value), 403);
         $this->validate([
-            'newTitle'       => ['required', 'string', 'max:100'],
+            'newTitle' => ['required', 'string', 'max:100'],
             'newDescription' => ['nullable', 'string'],
-            'newIcon'        => ['nullable', 'string', 'max:100'],
+            'newIcon' => ['nullable', 'string', 'max:100'],
         ]);
 
         $maxOrder = Service::max('sort_order') ?? -1;
         Service::create([
-            'title'       => $this->newTitle,
+            'title' => $this->newTitle,
             'description' => $this->newDescription ?: null,
-            'icon'        => $this->newIcon ?: null,
+            'icon' => $this->newIcon ?: null,
             'category_id' => $this->newCategoryId,
-            'sort_order'  => $maxOrder + 1,
+            'sort_order' => $maxOrder + 1,
         ]);
 
         $this->reset('newTitle', 'newDescription', 'newIcon');
@@ -74,12 +74,12 @@ class Services extends Component
     {
         $service = Service::findOrFail($id);
         $this->resetValidation();
-        $this->editingId      = $id;
-        $this->editTitle      = $service->title;
+        $this->editingId = $id;
+        $this->editTitle = $service->title;
         $this->editDescription = $service->description ?? '';
-        $this->editIcon       = $service->icon ?? '';
+        $this->editIcon = $service->icon ?? '';
         $this->editCategoryId = $service->category_id;
-        $this->showModal      = true;
+        $this->showModal = true;
     }
 
     public function saveEdit(): void
@@ -87,14 +87,14 @@ class Services extends Component
         abort_unless(auth()->user()->can(Permission::ServicesManage->value), 403);
         $service = Service::findOrFail($this->editingId);
         $this->validate([
-            'editTitle'       => ['required', 'string', 'max:100'],
+            'editTitle' => ['required', 'string', 'max:100'],
             'editDescription' => ['nullable', 'string'],
-            'editIcon'        => ['nullable', 'string', 'max:100'],
+            'editIcon' => ['nullable', 'string', 'max:100'],
         ]);
         $service->update([
-            'title'       => $this->editTitle,
+            'title' => $this->editTitle,
             'description' => $this->editDescription ?: null,
-            'icon'        => $this->editIcon ?: null,
+            'icon' => $this->editIcon ?: null,
             'category_id' => $this->editCategoryId,
         ]);
         $this->editingId = null;
@@ -104,8 +104,8 @@ class Services extends Component
     /** Close modal without saving. */
     public function closeModal(): void
     {
-        $this->showModal  = false;
-        $this->editingId  = null;
+        $this->showModal = false;
+        $this->editingId = null;
         $this->resetValidation();
     }
 

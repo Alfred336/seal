@@ -13,7 +13,6 @@ class BackupNotifiable extends SpatieNotifiable
      * Falls back to default notification routing if query fails or no administrators exist.
      *
      * @param  mixed  $notification
-     * @return void
      */
     public function notify($notification): void
     {
@@ -24,6 +23,7 @@ class BackupNotifiable extends SpatieNotifiable
                 foreach ($admins as $admin) {
                     $admin->notify($notification);
                 }
+
                 return;
             }
         } catch (\Throwable $e) {
@@ -37,8 +37,6 @@ class BackupNotifiable extends SpatieNotifiable
      * Route notifications for the mail channel.
      * Returns an array of emails for all users with the 'admin' role.
      * Fallback to the configured default email if no admin users exist or query fails.
-     *
-     * @return string|array
      */
     public function routeNotificationForMail(): string|array
     {

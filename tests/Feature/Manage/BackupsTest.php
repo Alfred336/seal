@@ -3,10 +3,14 @@
 namespace Tests\Feature\Manage;
 
 use App\Enums\Permission;
+use App\Enums\Role;
 use App\Models\User;
+use App\Notifications\Backup\BackupWasSuccessfulNotification;
+use App\Notifications\BackupNotifiable;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Spatie\Backup\Events\BackupWasSuccessful;
 use Tests\TestCase;
 
 class BackupsTest extends TestCase
@@ -63,15 +67,15 @@ class BackupsTest extends TestCase
     public function test_backup_notifiable_routes_email_to_all_admin_users(): void
     {
         $admin1 = User::factory()->create();
-        $admin1->assignRole(\App\Enums\Role::Admin->value);
+        $admin1->assignRole(Role::Admin->value);
 
         $admin2 = User::factory()->create();
-        $admin2->assignRole(\App\Enums\Role::Admin->value);
+        $admin2->assignRole(Role::Admin->value);
 
         // A non-admin user
         User::factory()->create();
 
-        $notifiable = new \App\Notifications\BackupNotifiable();
+        $notifiable = new BackupNotifiable;
         $emails = $notifiable->routeNotificationForMail();
 
         $this->assertIsArray($emails);
@@ -87,10 +91,10 @@ class BackupsTest extends TestCase
         $admin = User::factory()->create([
             'name' => 'John Doe Admin',
         ]);
-        $admin->assignRole(\App\Enums\Role::Admin->value);
+        $admin->assignRole(Role::Admin->value);
 
-        $event = new \Spatie\Backup\Events\BackupWasSuccessful('local', 'sealCMS');
-        $notification = new \App\Notifications\Backup\BackupWasSuccessfulNotification($event);
+        $event = new BackupWasSuccessful('local', 'sealCMS');
+        $notification = new BackupWasSuccessfulNotification($event);
 
         $mailMessage = $notification->toMail($admin);
 

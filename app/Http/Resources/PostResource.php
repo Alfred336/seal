@@ -4,7 +4,6 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 class PostResource extends JsonResource
 {
@@ -22,10 +21,10 @@ class PostResource extends JsonResource
         $readTime = null;
         if ($this->read_time) {
             preg_match('/\d+/', $this->read_time, $matches);
-            if (!empty($matches[0])) {
-                $readTime = $matches[0] . ' min read';
+            if (! empty($matches[0])) {
+                $readTime = $matches[0].' min read';
             } else {
-                $readTime = $this->read_time . ' min read';
+                $readTime = $this->read_time.' min read';
             }
         }
 
@@ -36,7 +35,7 @@ class PostResource extends JsonResource
                     ? asset($this->image_path)
                     : (str_starts_with($this->image_path, 'storage/')
                         ? asset($this->image_path)
-                        : asset('storage/' . $this->image_path))))
+                        : asset('storage/'.$this->image_path))))
             : null;
 
         return [
@@ -49,9 +48,9 @@ class PostResource extends JsonResource
             'authorColor' => $this->author?->color,
             'publishDate' => $publishDate,
             'category' => $this->category ? [
-                'id'    => $this->category->id,
-                'name'  => $this->category->name,
-                'slug'  => $this->category->slug,
+                'id' => $this->category->id,
+                'name' => $this->category->name,
+                'slug' => $this->category->slug,
                 'color' => $this->category->color,
             ] : null,
             'readTime' => $readTime,

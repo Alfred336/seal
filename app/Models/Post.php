@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\PostStatus;
+use App\Mail\NewPostPublished;
 use Database\Factories\PostFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * @property int $id
@@ -77,6 +79,12 @@ class Post extends Model
                 $post->image_icon = '<svg width="56" height="56" viewBox="0 0 56 56" fill="none"><path d="M20 24v-4a8 8 0 1 1 16 0v4" stroke="rgba(255,255,255,0.7)" stroke-width="2"/><rect x="16" y="24" width="24" height="18" rx="4" fill="rgba(255,255,255,0.22)"/></svg>';
             }
         });
+
+        static::saved(function (self $post) {
+            if ($post->status === PostStatus::Published && ($post->wasRecentlyCreated || $post->wasChanged('status'))) {
+                $post->notifySubscribers();
+            }
+        });
     }
 
     /**
@@ -136,5 +144,14 @@ class Post extends Model
     public function isOwnedBy(User $user): bool
     {
         return $this->author_id === $user->id;
+    }
+
+    public function notifySubscribers(): void
+    {
+        $subscribers = Subscription::active()->get();
+
+        foreach ($subscribers as $subscriber) {
+            Mail::to($subscriber->email)->queue(new NewPostPublished($this, $subscriber->email));
+        }
     }
 }

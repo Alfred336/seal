@@ -12,4 +12,3 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command('backup:clean')->dailyAt('23:59');
 Schedule::command('backup:run --only-db')->dailyAt('23:59');
 Schedule::command('backup:run')->sundays()->at('23:59');
-

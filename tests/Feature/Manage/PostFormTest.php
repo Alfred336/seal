@@ -9,6 +9,8 @@ use App\Models\Tag;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -121,13 +123,13 @@ class PostFormTest extends TestCase
 
     public function test_authorized_user_can_upload_post_image(): void
     {
-        \Illuminate\Support\Facades\Storage::fake('public');
+        Storage::fake('public');
 
         $user = User::factory()->create();
         $user->givePermissionTo(Permission::PostsCreate->value);
         $this->actingAs($user);
 
-        $file = \Illuminate\Http\UploadedFile::fake()->image('cover.jpg');
+        $file = UploadedFile::fake()->image('cover.jpg');
 
         Livewire::test('manage.post-form')
             ->set('title', 'Upload Post')
@@ -140,6 +142,6 @@ class PostFormTest extends TestCase
         $this->assertNotNull($post);
         $this->assertNotNull($post->image_path);
 
-        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($post->image_path);
+        Storage::disk('public')->assertExists($post->image_path);
     }
 }

@@ -6,6 +6,7 @@ use App\Enums\SubscriptionStatus;
 use App\Http\Requests\Api\NewsletterRequest;
 use App\Models\Subscription;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class NewsletterController extends ApiController
 {
@@ -34,5 +35,40 @@ class NewsletterController extends ApiController
         ]);
 
         return response()->json(['message' => 'Thank you for subscribing!'], 201);
+    }
+
+    /**
+     * Handle email unsubscribe request using signed URL parameters.
+     */
+    public function unsubscribe(Request $request): JsonResponse
+    {
+        if (! $request->hasValidSignature()) {
+            return response()->json([
+                'message' => 'The unsubscribe link is invalid or has expired.',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $subscription = Subscription::where('email', $validated['email'])->first();
+
+        if (! $subscription) {
+            return response()->json([
+                'message' => 'Subscription record not found.',
+            ], 404);
+        }
+
+        if ($subscription->status !== SubscriptionStatus::Unsubscribed) {
+            $subscription->update([
+                'status' => SubscriptionStatus::Unsubscribed,
+                'unsubscribed_at' => now(),
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'You have been successfully unsubscribed from our mailing list.',
+        ], 200);
     }
 }

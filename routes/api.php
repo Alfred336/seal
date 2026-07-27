@@ -3,12 +3,12 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CallController;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\JobController;
 use App\Http\Controllers\Api\NewsletterController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ProjectRequestController;
 use App\Http\Controllers\Api\ServiceController;
-use App\Http\Controllers\Api\JobController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [AuthController::class, 'login'])->name('api.login');
@@ -29,3 +29,4 @@ Route::post('contact', [ContactController::class, 'store'])->name('api.contact.s
 Route::post('calls', [CallController::class, 'store'])->name('api.calls.store');
 Route::post('project-request', [ProjectRequestController::class, 'store'])->name('api.project-request.store');
 Route::post('newsletter', [NewsletterController::class, 'store'])->name('api.newsletter.store');
+Route::post('unsubscribe', [NewsletterController::class, 'unsubscribe'])->name('api.newsletter.unsubscribe');

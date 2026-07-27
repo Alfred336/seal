@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\URL;
 
 /**
  * @property int $id
@@ -52,5 +53,22 @@ class Subscription extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', SubscriptionStatus::Active);
+    }
+
+    /**
+     * Generate a signed unsubscribe URL pointing to the frontend domain.
+     */
+    public static function generateUnsubscribeUrl(string $email, int $ttlDays = 30): string
+    {
+        $signedBackendUrl = URL::temporarySignedRoute(
+            'api.newsletter.unsubscribe',
+            now()->addDays($ttlDays),
+            ['email' => $email]
+        );
+
+        $parsed = parse_url($signedBackendUrl);
+        $frontendUrl = rtrim(config('app.frontend_url', 'https://sealtech.co.tz'), '/');
+
+        return $frontendUrl.'/unsubscribe?'.($parsed['query'] ?? '');
     }
 }

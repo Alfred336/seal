@@ -4,8 +4,8 @@ namespace App\Livewire\Manage;
 
 use App\Enums\Permission;
 use App\Enums\Role;
-use App\Models\User;
 use App\Mail\UserInvitation;
+use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
