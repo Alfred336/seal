@@ -26,6 +26,21 @@
         </div>
     </div>
 
+    {{-- Filters --}}
+    <div class="flex flex-wrap gap-3">
+        <flux:input
+            wire:model.live.debounce.300ms="search"
+            placeholder="{{ __('Search backups…') }}"
+            icon="magnifying-glass"
+            class="max-w-xs"
+        />
+        <flux:select wire:model.live="filter" class="max-w-44">
+            <flux:select.option value="">{{ __('All backups') }}</flux:select.option>
+            <flux:select.option value="database">{{ __('Database') }}</flux:select.option>
+            <flux:select.option value="files">{{ __('Files') }}</flux:select.option>
+        </flux:select>
+    </div>
+
     {{-- Backups list container --}}
     <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700/80 rounded-2xl shadow-xs overflow-hidden">
         <div class="overflow-x-auto">
@@ -84,5 +99,9 @@
             </table>
         </div>
     </div>
+
+    @if ($backupFilesPagination->hasPages())
+        <div>{{ $backupFilesPagination->links() }}</div>
+    @endif
 
 </div>

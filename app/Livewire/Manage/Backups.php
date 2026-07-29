@@ -3,6 +3,7 @@
 namespace App\Livewire\Manage;
 
 use App\Enums\Permission;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -10,11 +11,28 @@ use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 #[Title('Backups')]
 #[Layout('layouts.app')]
 class Backups extends Component
 {
+    use WithPagination;
+
+    public string $search = '';
+
+    public string $filter = '';
+
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilter(): void
+    {
+        $this->resetPage();
+    }
+
     /**
      * Run a manual database backup from the UI.
      */
@@ -114,10 +132,42 @@ class Backups extends Component
                 }
             }
 
-            // Sort by last modified date (newest first)
-            usort($backupFiles, fn ($a, $b) => $b['last_modified'] <=> $a['last_modified']);
+            $backupFiles = collect($backupFiles)
+                ->filter(function (array $file): bool {
+                    $name = strtolower($file['name']);
+                    $search = strtolower($this->search);
+
+                    if ($search !== '' && str_contains($name, $search) === false) {
+                        return false;
+                    }
+
+                    if ($this->filter === 'database' && str_contains($name, 'database') === false && str_contains($name, 'db') === false) {
+                        return false;
+                    }
+
+                    if ($this->filter === 'files' && str_contains($name, 'files') === false && str_contains($name, 'full') === false) {
+                        return false;
+                    }
+
+                    return true;
+                })
+                ->sortByDesc('last_modified')
+                ->values()
+                ->all();
         }
 
-        return view('livewire.manage.backups', compact('backupFiles'));
+        $perPage = 10;
+        $pagedBackupFiles = collect($backupFiles)->slice(($this->getPage() - 1) * $perPage, $perPage)->values()->all();
+
+        return view('livewire.manage.backups', [
+            'backupFiles' => $pagedBackupFiles,
+            'backupFilesPagination' => new LengthAwarePaginator(
+                collect($backupFiles)->forPage($this->getPage(), $perPage)->values()->all(),
+                count($backupFiles),
+                $perPage,
+                $this->getPage(),
+                ['path' => request()->getRequestUri()]
+            ),
+        ]);
     }
 }

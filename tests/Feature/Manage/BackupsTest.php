@@ -9,6 +9,7 @@ use App\Notifications\Backup\BackupWasSuccessfulNotification;
 use App\Notifications\BackupNotifiable;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Spatie\Backup\Events\BackupWasSuccessful;
 use Tests\TestCase;
@@ -62,6 +63,25 @@ class BackupsTest extends TestCase
         Livewire::test('manage.backups')
             ->assertOk()
             ->assertViewHas('backupFiles');
+    }
+
+    public function test_authorized_user_can_search_and_filter_backups(): void
+    {
+        $user = User::factory()->create();
+        $user->givePermissionTo(Permission::BackupsManage->value);
+        $this->actingAs($user);
+
+        Storage::fake('local');
+        $backupName = config('backup.backup.name', 'laravel-backup');
+        $disk = Storage::disk('local');
+        $disk->put("{$backupName}/backup-db-2024-01-01.zip", 'db');
+        $disk->put("{$backupName}/backup-full-2024-01-02.zip", 'full');
+
+        Livewire::test('manage.backups')
+            ->set('search', 'db')
+            ->set('filter', 'database')
+            ->assertSee('backup-db-2024-01-01.zip')
+            ->assertDontSee('backup-full-2024-01-02.zip');
     }
 
     public function test_backup_notifiable_routes_email_to_all_admin_users(): void
