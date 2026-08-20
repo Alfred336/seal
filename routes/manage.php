@@ -14,6 +14,7 @@ use App\Livewire\Manage\Services;
 use App\Livewire\Manage\Subscriptions;
 use App\Livewire\Manage\Tags;
 use App\Livewire\Manage\Users;
+use App\Livewire\Manage\PlanInquiries;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])
@@ -86,4 +87,8 @@ Route::middleware(['auth', 'verified'])
         Route::get('backups', Backups::class)
             ->middleware('permission:backups.manage')
             ->name('backups.index');
+
+        Route::get('plan-inquiries', PlanInquiries::class)
+            ->middleware('permission:plan-inquiries.view')
+            ->name('plan-inquiries.index');
     });

@@ -158,6 +158,18 @@
                             </flux:sidebar.item>
                         @endcan
 
+                                                // 
+                        @can('plan-inquiries.view')
+                            <flux:sidebar.item
+                                icon="briefcase"
+                                :href="route('manage.plan-inquiries.index')"
+                                :current="request()->routeIs('manage.plan-inquiries.*')"
+                                wire:navigate
+                            >
+                                {{ __('Plan Inquiries') }}
+                            </flux:sidebar.item>
+                        @endcan
+
                     </flux:sidebar.group>
                 @endcanany
 
