@@ -18,6 +18,8 @@ enum Permission: string
     case ProjectsManage = 'projects.manage';
     case ContactSubmissionsView = 'contact-submissions.view';
     case ContactSubmissionsUpdate = 'contact-submissions.update';
+    case PlanInquiriesView = 'plan-inquiries.view';
+    case PlanInquiriesUpdate = 'plan-inquiries.update';
     case CallRequestsView = 'call-requests.view';
     case CallRequestsUpdate = 'call-requests.update';
     case ProjectRequestsView = 'project-requests.view';

@@ -128,6 +128,10 @@ class RolePermissionSeeder extends Seeder
             // Marketing — newsletter subscribers
             Permission::SubscriptionsView,        // @can('subscriptions.view')    → list subs
             Permission::SubscriptionsManage,      // @can('subscriptions.manage')  → unsubscribe + export CSV
+
+            // Pricing plan inquiries
+            Permission::PlanInquiriesView,
+            Permission::PlanInquiriesUpdate,
         ],
     ];
 

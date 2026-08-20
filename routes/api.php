@@ -9,9 +9,19 @@ use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ProjectRequestController;
 use App\Http\Controllers\Api\ServiceController;
+use App\Http\Controllers\Api\PlanInquiryController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [AuthController::class, 'login'])->name('api.login');
+
+// Public pricing plan inquiry.
+// Separate from the existing Start Project flow.
+Route::post(
+    'plan-inquiries',
+    [PlanInquiryController::class, 'store']
+)
+    ->middleware('throttle:10,1')
+    ->name('api.plan-inquiries.store');
 
 Route::middleware('auth:sanctum')->group(function (): void {
     // Authenticated routes
