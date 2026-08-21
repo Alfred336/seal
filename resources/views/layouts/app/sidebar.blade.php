@@ -158,7 +158,7 @@
                             </flux:sidebar.item>
                         @endcan
 
-                                                // 
+                        {{-- Plan inquiries --}}                                                
                         @can('plan-inquiries.view')
                             <flux:sidebar.item
                                 icon="briefcase"
