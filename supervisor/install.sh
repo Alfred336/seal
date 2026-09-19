@@ -11,4 +11,4 @@ supervisorctl reread
 supervisorctl update
 
 echo "Checking status of dev workers..."
-supervisorctl status dev-seal-queue:* dev-seal-schedule:*
+supervisorctl status dev-seal-queue dev-seal-schedule
