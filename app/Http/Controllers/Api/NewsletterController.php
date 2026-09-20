@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Permission;
 use App\Enums\SubscriptionStatus;
 use App\Http\Requests\Api\NewsletterRequest;
 use App\Models\Subscription;
+use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class NewsletterController extends ApiController
 {
@@ -38,21 +41,51 @@ class NewsletterController extends ApiController
     }
 
     /**
-     * Handle email unsubscribe request using signed URL parameters.
+     * Handle email unsubscribe request using signed URL parameters or authenticated app/user.
      */
     public function unsubscribe(Request $request): JsonResponse
     {
-        if (! $request->hasValidSignature()) {
-            return response()->json([
-                'message' => 'The unsubscribe link is invalid or has expired.',
-            ], 403);
+        $user = $request->user('sanctum') ?? $request->user();
+        $isAuthenticated = $user !== null;
+
+        $email = $request->input('email', $request->query('email'));
+        $expires = $request->input('expires', $request->query('expires'));
+        $signature = $request->input('signature', $request->query('signature'));
+
+        if ($isAuthenticated) {
+            if (! $email && ! empty($user->email)) {
+                $email = $user->email;
+            }
+
+            $validator = Validator::make(['email' => $email], [
+                'email' => ['required', 'email'],
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'The email field is required and must be a valid email address.',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $isOwnEmail = strcasecmp((string) $user->email, (string) $email) === 0;
+            $canManageSubscriptions = $user instanceof Authorizable && $user->can(Permission::SubscriptionsManage->value);
+            $hasValidSignature = Subscription::hasValidUnsubscribeSignature((string) $email, $expires, $signature, $request);
+
+            if (! $isOwnEmail && ! $canManageSubscriptions && ! $hasValidSignature) {
+                return response()->json([
+                    'message' => 'The unsubscribe link is invalid or has expired.',
+                ], 403);
+            }
+        } else {
+            if (! $email || ! Subscription::hasValidUnsubscribeSignature((string) $email, $expires, $signature, $request)) {
+                return response()->json([
+                    'message' => 'The unsubscribe link is invalid or has expired.',
+                ], 403);
+            }
         }
 
-        $validated = $request->validate([
-            'email' => 'required|email',
-        ]);
-
-        $subscription = Subscription::where('email', $validated['email'])->first();
+        $subscription = Subscription::where('email', $email)->first();
 
         if (! $subscription) {
             return response()->json([

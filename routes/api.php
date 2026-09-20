@@ -24,11 +24,11 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     Route::get('jobs', [JobController::class, 'index'])->name('api.jobs.index');
     Route::get('jobs/{slug}', [JobController::class, 'show'])->name('api.jobs.show');
-
     Route::post('contact', [ContactController::class, 'store'])->name('api.contact.store');
     Route::post('calls', [CallController::class, 'store'])->name('api.calls.store');
     Route::post('project-request', [ProjectRequestController::class, 'store'])->name('api.project-request.store');
-
     Route::post('newsletter', [NewsletterController::class, 'store'])->name('api.newsletter.store');
-    Route::post('unsubscribe', [NewsletterController::class, 'unsubscribe'])->name('api.newsletter.unsubscribe');
+    Route::match(['get', 'post'], 'unsubscribe', [NewsletterController::class, 'unsubscribe'])->name('api.newsletter.unsubscribe');
 });
+
+
